@@ -852,54 +852,94 @@
 
     background:#080808;
     border-top:1px solid rgba(255,255,255,.08);
-}
+      }
 
-.footer-wrap{
-    max-width:var(--content-w);
-    margin:0 auto;
-}
+      .footer-wrap{
+          max-width:var(--content-w);
+          margin:0 auto;
+      }
 
-.footer-wrap p{
-    margin:0 0 .75rem;
-    font:inherit;
-    line-height:1.7;
-    color:var(--ink-dim);
-}
+      .footer-wrap p{
+          margin:0 0 .75rem;
+          font:inherit;
+          line-height:1.7;
+          color:var(--ink-dim);
+      }
 
-.footer-wrap strong{
-    color:var(--ink);
-    font-weight:600;
-}
+      .footer-wrap strong{
+          color:var(--ink);
+          font-weight:600;
+      }
 
-.footer-wrap em{
-    color:var(--ink);
-    font-style:italic;
-}
+      .footer-wrap em{
+          color:var(--ink);
+          font-style:italic;
+      }
 
-.footer-wrap a{
-    color:var(--accent);
-    text-decoration:none;
-    transition:.2s;
-}
+      .footer-wrap a{
+          color:var(--accent);
+          text-decoration:none;
+          transition:.2s;
+      }
 
-.footer-wrap a:hover{
-    color:var(--ink);
-}
+      .footer-wrap a:hover{
+          color:var(--ink);
+      }
 
-.footer-links{
-    margin-top:1.25rem;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
+      .footer-links{
+          margin-top:1.25rem;
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+      }
 
-.footer-links a{
-    font:inherit;
-    color:var(--ink-dim);
-}
+      .footer-links a{
+          font:inherit;
+          color:var(--ink-dim);
+      }
 
-.footer-links a:hover{
-    color:var(--accent);
+      .footer-links a:hover{
+          color:var(--accent);
+      }
+
+      /* =========================================================
+   MOBILE FIXES ONLY - WILL NOT AFFECT DESKTOP
+   ========================================================= */
+@media (max-width: 768px) {
+  /* 1. Force the body to never exceed screen width */
+  html, body {
+    max-width: 100vw !important;
+    overflow-x: hidden !important; /* Kills the right-side void */
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  /* 2. Add proper breathing room for mobile so it doesn't hug the edges */
+  body {
+    padding: 16px !important; 
+  }
+
+  /* 3. The usual suspects: Fix KaTeX Math Blocks from stretching the page */
+  .katex-display {
+    overflow-x: auto !important; /* Lets users swipe math left/right */
+    overflow-y: hidden !important;
+    max-width: 100%;
+    padding-bottom: 10px; /* Gives room for the invisible scrollbar */
+  }
+
+  /* 4. Fix any wide tables or code blocks */
+  table, pre {
+    display: block !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    white-space: pre-wrap !important; /* Forces text to wrap if possible */
+  }
+
+  /* 5. Ensure images scale down */
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
 }
 
     </style>
