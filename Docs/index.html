@@ -1,0 +1,4552 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Interactive Guide: Modeling and Designing of an All-Digital Resonate-and-Fire Neuron Circuit</title>
+    <meta
+      name="description"
+      content="how a 100-year-old integrate-and-fire model acquires resonant temporal dynamics using just 23 flip-flops"
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=STIX+Two+Text:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.17.0/dist/katex.min.css"
+    />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.17.0/dist/katex.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.17.0/dist/contrib/auto-render.min.js"
+    ></script>
+
+    <style>
+      /* ============ TOKENS ============ */
+      :root {
+        /* ===== Foundation ===== */
+
+        --bg: #121513;
+        --bg-panel: #181d19;
+        --bg-panel-2: #202621;
+
+        /* ===== Borders ===== */
+
+        --line: #2c352d;
+        --line-soft: #232b25;
+
+        /* ===== Typography ===== */
+
+        --ink: #edf2ee;
+        --ink-dim: #bcc8bf;
+        --ink-faint: #7f9385;
+
+        /* ===== Brand ===== */
+
+        --accent: #88a96f;
+        --accent-hover: #9fbe82;
+        --accent-soft: #5a734d;
+
+        /* ===== Secondary ===== */
+
+        --amber: #d5b26c;
+        --copper: #b78556;
+
+        --red-trace: #d36d74;
+        --blue-trace: #73acd6;
+
+        /* ===== Misc ===== */
+
+        --radius: 4px;
+
+        --content-w: 700px;
+
+        --serif: "STIX Two Text", Georgia, serif;
+        --sans: "IBM Plex Sans", system-ui, sans-serif;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--sans);
+        line-height: 1.65;
+        font-size: 17px;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: var(--accent);
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: var(--serif);
+        font-weight: 600;
+        color: var(--accent);
+        letter-spacing: 0.2px;
+      }
+      h1 {
+        font-size: clamp(0.5rem, 6vw, 6rem); /* should be small*/
+        margin: 0 0 0.4em;
+        line-height: 0.95;
+        letter-spacing: -0.05em;
+        max-width: 18ch; /* or remove entirely */
+      }
+      h2 {
+        font-size: clamp(1.5rem, 3vw, 2rem);
+        margin: 0 0 0.3em;
+        font-weight: 600;
+      }
+      h3 {
+        font-size: 1.2rem;
+        margin: 1.6em 0 0.5em;
+        color: var(--accent);
+        font-weight: 600;
+      }
+      p {
+        margin: 0 0 1.05em;
+      }
+      code,
+      .mono {
+        font-family: var(--mono);
+      }
+      ::selection {
+        background: var(--accent-soft);
+        color: #121513;
+      }
+      :focus-visible {
+        outline: 2px solid var(--amber);
+        outline-offset: 2px;
+      }
+
+      .wrap {
+        max-width: var(--content-w);
+        margin: 0 auto;
+        padding: 0 24px;
+        position: relative;
+        z-index: 1;
+      }
+      .eyebrow {
+        display: flex;
+
+        gap: 0.4rem;
+
+        font-size: 0.72rem;
+
+        letter-spacing: 0.14em;
+
+        text-transform: uppercase;
+
+        font-weight: 600;
+
+        color: var(--ink-faint);
+
+        margin-bottom: 2.8rem;
+      }
+
+      /* ============ NAV / PROGRESS ============ */
+      #progressbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 2px;
+        width: 0%;
+        background: var(--accent);
+        z-index: 100;
+        transition: width 0.08s linear;
+        box-shadow: 0 0 8px var(--accent);
+      }
+      nav.toc {
+        position: fixed;
+        top: 14px;
+        right: 14px;
+        z-index: 90;
+        font-family: var(--sans);
+        font-size: 0.72rem;
+      }
+      .toc-toggle {
+        background: var(--bg-panel);
+        border: 1px solid var(--line);
+        color: var(--ink-dim);
+        border-radius: var(--radius);
+        padding: 8px 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .toc-toggle:hover {
+        color: var(--accent);
+        border-color: var(--accent-soft);
+      }
+      .toc-panel {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: calc(100% + 8px);
+        background: var(--bg-panel);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 14px 16px;
+        width: 230px;
+        max-height: 70vh;
+        overflow: auto;
+      }
+      .toc-panel.open {
+        display: block;
+      }
+      .toc-panel a {
+        display: block;
+        color: var(--ink-dim);
+        text-decoration: none;
+        padding: 5px 0;
+        border-bottom: 1px dashed var(--line-soft);
+        font-size: 0.74rem;
+      }
+      .toc-panel a:hover,
+      .toc-panel a.active {
+        color: var(--accent);
+      }
+      .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 6px var(--accent);
+        flex: none;
+      }
+
+      /* ============ HERO ============ */
+      header.hero {
+        padding-top: 120px;
+        padding-bottom: 72px;
+      }
+      .hero-authors {
+        margin-top: 2rem;
+
+        font-size: 1rem;
+
+        font-weight: 500;
+
+        color: var(--ink-dim);
+
+        display: flex;
+
+        flex-wrap: wrap;
+
+        gap: 0.6rem;
+      }
+      .hero-affil {
+        margin-top: 1rem;
+
+        font-size: 0.88rem;
+
+        line-height: 1.8;
+
+        color: var(--ink-faint);
+
+        max-width: 60ch;
+      }
+      .hero-scope {
+        margin: 2.2em 0;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: radial-gradient(ellipse at 50% 0%, #0c2419 0%, #071510 70%);
+        padding: 10px 6px 0;
+      }
+      .hero-scope svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .scope-caption {
+        font-family: var(--sans);
+        font-size: 0.68rem;
+        color: var(--ink-faint);
+        text-align: center;
+        padding: 8px 0 14px;
+        letter-spacing: 0.03em;
+      }
+      .abstract {
+        border-left: 2px solid var(--accent-soft);
+        padding-left: 20px;
+        margin: 2em 0;
+        color: var(--ink-dim);
+        font-size: 0.98rem;
+      }
+      .abstract strong {
+        color: var(--ink);
+      }
+      .index-terms {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        color: var(--ink-faint);
+        margin-top: 1em;
+      }
+
+      /* ============ SECTIONS ============ */
+      main {
+        position: relative;
+        z-index: 1;
+      }
+      article.section {
+        padding: 46px 0;
+        border-top: 1px solid var(--line-soft);
+      }
+      .section-num {
+        font-family: var(--mono);
+        color: var(--accent-soft);
+        font-size: 0.85rem;
+      }
+
+      /* Plain-English callout */
+      .plain {
+        margin: 1.6em 0;
+        background: var(--bg-panel-2);
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--amber);
+        border-radius: var(--radius);
+        padding: 16px 18px;
+      }
+      .plain-label {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--amber);
+        margin-bottom: 0.5em;
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+      }
+      .plain p:last-child {
+        margin-bottom: 0;
+      }
+
+      /* Figure blocks */
+      figure.fig {
+        margin: 1.8em 0;
+        border: 1px solid #3a3a3a; /* charcoal border, was var(--line) */
+        border-radius: var(--radius);
+        background: #1c1c1c; /* charcoal, was pure black */
+        padding: 14px;
+        cursor: zoom-in;
+        transition: border-color 0.2s ease;
+      }
+      figure.fig:hover,
+      figure.fig:focus {
+        border-color: #8bc34a; /* avocado accent on interaction */
+        outline: none;
+      }
+      figure.fig img {
+        width: 100%;
+        display: block;
+        border-radius: 2px;
+        background: #1c1c1c; /* match figure bg, not white */
+      }
+      figcaption {
+        font-family: var(--mono);
+        font-size: 0.74rem;
+        color: #9a9a9a; /* muted white-gray, was var(--ink-dim) */
+        margin-top: 10px;
+        line-height: 1.5;
+      }
+      figcaption b {
+        color: #8bc34a; /* avocado, was var(--accent) */
+      }
+      .fig-tag {
+        display: inline-block;
+        font-family: var(--mono);
+        font-size: 0.62rem;
+        letter-spacing: 0.08em;
+        color: #1c1c1c; /* charcoal text on light chip */
+        background: #e6e6e6; /* white-gray chip, was var(--accent) */
+        padding: 2px 6px;
+        border-radius: 2px;
+        margin-bottom: 8px;
+      }
+      .fig-tag.reconstructed {
+        background: #8bc34a; /* avocado for reconstructed tag */
+        color: #1c1c1c;
+      }
+
+      /* equations */
+      .eq {
+        margin: 1.4em 0;
+        padding: 16px 14px;
+        background: var(--bg-panel);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        overflow-x: auto;
+        position: relative;
+      }
+      .eq-num {
+        position: absolute;
+        right: 12px;
+        top: 12px;
+        font-family: var(--mono);
+        color: var(--ink-faint);
+        font-size: 0.78rem;
+      }
+
+      /* tables */
+      .table-wrap {
+        overflow-x: auto;
+        margin: 1.6em 0;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 0.85rem;
+        font-family: var(--mono);
+        min-width: 520px;
+      }
+      th,
+      td {
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--line-soft);
+        text-align: left;
+        white-space: nowrap;
+      }
+      th {
+        background: var(--bg-panel-2);
+        color: var(--accent);
+        cursor: pointer;
+        user-select: none;
+      }
+      th:hover {
+        color: var(--amber);
+      }
+      tr:hover td {
+        background: #0d2118;
+      }
+      .table-title {
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        color: var(--ink-dim);
+        margin-bottom: 8px;
+      }
+
+      /* details / go deeper */
+      details.deeper {
+        margin: 1.6em 0;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--bg-panel);
+      }
+      details.deeper summary {
+        cursor: pointer;
+        padding: 12px 16px;
+        font-family: var(--mono);
+        font-size: 0.82rem;
+        color: var(--accent);
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      details.deeper summary::-webkit-details-marker {
+        display: none;
+      }
+      details.deeper summary::before {
+        content: "▸";
+        transition: transform 0.15s;
+      }
+      details.deeper[open] summary::before {
+        transform: rotate(90deg);
+      }
+      details.deeper .deeper-body {
+        padding: 0 16px 16px;
+      }
+
+      /* pull quote */
+      blockquote.pull {
+        font-family: var(--serif);
+        font-size: 1.35rem;
+        line-height: 1.4;
+        color: var(--accent);
+        border: none;
+        margin: 2em 0;
+        padding: 0 0 0 26px;
+        border-left: 2px solid var(--accent);
+        font-weight: 450;
+      }
+      blockquote.pull cite {
+        display: block;
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        color: var(--ink-faint);
+        margin-top: 0.6em;
+        font-style: normal;
+      }
+
+      /* glossary abbr */
+      abbr[title] {
+        text-decoration: underline dotted var(--ink-faint);
+        cursor: help;
+      }
+
+      /* lightbox */
+      #lightbox {
+        position: fixed;
+        inset: 0;
+        background: rgba(3, 10, 7, 0.92);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 200;
+        padding: 30px;
+        flex-direction: column;
+        backdrop-filter: blur(3px);
+      }
+      #lightbox.open {
+        display: flex;
+      }
+      #lightbox img {
+        max-width: min(92vw, 1100px);
+        max-height: 78vh;
+        border-radius: 4px;
+        background: #fff;
+      }
+      #lightbox .lb-cap {
+        color: var(--ink-dim);
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        max-width: 800px;
+        text-align: center;
+        margin-top: 14px;
+      }
+      #lightbox .lb-close {
+        position: absolute;
+        top: 20px;
+        right: 26px;
+        background: none;
+        border: 1px solid var(--line);
+        color: var(--ink);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1rem;
+      }
+
+      /* footer */
+      footer {
+        padding: 60px 0 90px;
+        border-top: 1px solid var(--line-soft);
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        color: var(--ink-faint);
+        position: relative;
+        z-index: 1;
+      }
+      footer .cite {
+        background: var(--bg-panel);
+        border: 1px solid var(--line);
+        padding: 16px;
+        border-radius: var(--radius);
+        color: var(--ink-dim);
+        margin-bottom: 1.2em;
+      }
+
+      /* fixed strip listing contributions */
+      ul.contrib {
+        padding-left: 1.2em;
+      }
+      ul.contrib li {
+        margin-bottom: 0.5em;
+      }
+
+      @media (max-width: 600px) {
+        body {
+          font-size: 16px;
+        }
+        header.hero {
+          padding: 72px 0 40px;
+        }
+        nav.toc {
+          top: 10px;
+          right: 10px;
+        }
+        .toc-panel {
+          width: 200px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        * {
+          animation-duration: 0.001ms !important;
+          transition-duration: 0.001ms !important;
+        }
+      }
+
+      .compare-wrap{
+          display:grid;
+          grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+          gap:12px;
+          margin:2rem 0 1rem;
+      }
+
+
+      .design-card{
+          background:var(--bg-panel);
+          border:1px solid var(--line);
+          border-radius:var(--radius);
+          padding:20px;
+      }
+
+      .design-tag{
+          display:inline-block;
+          font-family:var(--mono);
+          font-size:.68rem;
+          text-transform:uppercase;
+          letter-spacing:.08em;
+          color:var(--bg);
+          background:var(--accent);
+          padding:4px 9px;
+          border-radius:3px;
+          margin-bottom:12px;
+      }
+
+      .design-card h3{
+          margin:.2rem 0 .8rem;
+          color:var(--accent);
+          font-size:1.05rem;
+      }
+
+      .design-card p{
+          color:var(--ink-dim);
+          margin-bottom:1rem;
+      }
+
+      .design-flaw{
+          border-top:1px dashed var(--line);
+          padding-top:12px;
+          color:var(--red-trace);
+          font-size:.9rem;
+      }
+
+      /* ============ REFERENCES DROPDOWN ============ */
+      .refs-dropdown {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* This centers the button */
+      }
+      
+      .refs-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--bg-panel);
+        border: 1px solid var(--line);
+        color: var(--ink);
+        font-family: var(--sans); /* Uses body font */
+        font-size: 1rem;
+        font-weight: 500;
+        border-radius: 30px; /* Elegant pill shape */
+        padding: 12px 28px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      }
+      
+      .refs-toggle:hover {
+        color: var(--bg);
+        background: var(--accent);
+        border-color: var(--accent);
+        transform: translateY(-2px);
+      }
+      
+      .refs-count {
+        background: var(--bg);
+        color: var(--ink-dim);
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-family: var(--mono);
+        transition: all 0.2s ease;
+      }
+      
+      .refs-toggle:hover .refs-count {
+        background: var(--bg-panel);
+        color: var(--ink);
+      }
+      
+      .refs-chevron {
+        transition: transform 0.3s ease;
+      }
+      
+      .refs-toggle[aria-expanded="true"] .refs-chevron {
+        transform: rotate(180deg);
+      }
+      
+      /* The Dropdown Panel */
+      /* The Dropdown Panel */
+      .refs-panel {
+        display: none;
+        width: 100%; 
+        margin-top: 24px;
+        background: #161a17; /* Deeper, richer dark background */
+        border: 1px solid rgba(136, 169, 111, 0.15); /* Very subtle tinted border */
+        border-radius: 16px; /* Smoother, more elegant corners */
+        overflow: hidden;
+        text-align: left; 
+        /* Adds a deep shadow and a faint ambient glow */
+        box-shadow: 0 20px 40px rgba(0,0,0,0.7), 0 0 20px rgba(136, 169, 111, 0.08);
+      }
+      
+      .refs-panel.open {
+        display: block;
+        animation: fadeInDown 0.3s ease;
+      }
+      
+      @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      .refs-search-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 20px 24px;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+        background: rgba(0,0,0,0.25); /* Gives the search bar area an inset feel */
+      }
+      
+      .refs-search {
+        flex: 1;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        color: var(--ink);
+        font-family: var(--sans);
+        font-size: 0.95rem;
+        border-radius: 30px; /* Modern pill-shaped search input */
+        padding: 12px 20px;
+        transition: all 0.2s ease;
+      }
+      
+      .refs-search::placeholder {
+        color: var(--ink-faint);
+      }
+      
+      .refs-search:focus {
+        outline: none;
+        border-color: var(--accent);
+        /* Adds a sleek, glowing neon-style ring when typing */
+        box-shadow: 0 0 12px rgba(136, 169, 111, 0.3), inset 0 0 0 1px var(--accent);
+      }
+      
+      .refs-matchcount {
+        font-family: var(--mono);
+        font-size: 0.85rem;
+        color: var(--ink-faint);
+        white-space: nowrap;
+      }
+      
+      .refs-list {
+        list-style: none;
+        margin: 0;
+        padding: 16px; /* Creates breathing room inside the box */
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      
+      .refs-list li {
+        display: flex;
+        gap: 16px;
+        padding: 14px 18px;
+        border-bottom: none; /* Removed the harsh dividing lines */
+        border-radius: 12px; /* Makes each reference look like a rounded card */
+        font-family: var(--sans); 
+        font-size: 0.95rem; 
+        line-height: 1.65;
+        color: var(--ink-dim); 
+        margin-bottom: 4px;
+        transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      
+      .refs-list li:hover {
+        background: rgba(136, 169, 111, 0.06);
+        color: var(--ink);
+        /* Slides the item slightly to the right and adds a glowing edge */
+        transform: translateX(6px);
+        box-shadow: inset 3px 0 0 var(--accent), inset 20px 0 30px -20px rgba(136, 169, 111, 0.15);
+      }
+      
+      .refs-list li:last-child {
+        margin-bottom: 0;
+      }
+      
+      .refs-list li.hidden {
+        display: none;
+      }
+      
+      .refs-list .refs-num {
+        flex: none;
+        color: var(--accent);
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: 0.95rem;
+        min-width: 2.6em;
+        padding-top: 2px;
+      }
+      
+      .refs-list .refs-text a {
+        color: var(--ink);
+        text-decoration: none;
+        border-bottom: 1px dotted var(--ink-faint);
+        transition: all 0.2s ease;
+      }
+      
+      .refs-list .refs-text a:hover {
+        color: var(--accent);
+        border-bottom: 1px solid var(--accent);
+      }
+      
+      .refs-list mark {
+        background: var(--accent);
+        color: var(--bg);
+        border-radius: 4px;
+        padding: 1px 4px;
+        box-shadow: 0 0 8px rgba(136, 169, 111, 0.4); /* Glow on highlighted search terms */
+      }
+      
+      .refs-empty {
+        padding: 30px;
+        color: var(--ink-faint);
+        font-family: var(--sans);
+        font-size: 1rem;
+        text-align: center;
+      }
+       
+      
+      /* =========================================
+        PREMIUM MINIMAL FOOTER
+      ========================================= */
+
+      .site-footer{
+    margin-top:5rem;
+    padding:2.5rem 1.5rem;
+
+    background:#080808;
+    border-top:1px solid rgba(255,255,255,.08);
+}
+
+.footer-wrap{
+    max-width:var(--content-w);
+    margin:0 auto;
+}
+
+.footer-wrap p{
+    margin:0 0 .75rem;
+    font:inherit;
+    line-height:1.7;
+    color:var(--ink-dim);
+}
+
+.footer-wrap strong{
+    color:var(--ink);
+    font-weight:600;
+}
+
+.footer-wrap em{
+    color:var(--ink);
+    font-style:italic;
+}
+
+.footer-wrap a{
+    color:var(--accent);
+    text-decoration:none;
+    transition:.2s;
+}
+
+.footer-wrap a:hover{
+    color:var(--ink);
+}
+
+.footer-links{
+    margin-top:1.25rem;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.footer-links a{
+    font:inherit;
+    color:var(--ink-dim);
+}
+
+.footer-links a:hover{
+    color:var(--accent);
+}
+
+    </style>
+  </head>
+  <body>
+    <div id="progressbar"></div>
+
+    <nav class="toc">
+      <button
+        class="toc-toggle"
+        id="tocBtn"
+        aria-expanded="false"
+        aria-controls="tocPanel"
+      >
+        <span class="dot"></span> Contents
+      </button>
+      <div class="toc-panel" id="tocPanel">
+        <a href="#abstract">Abstract</a>
+        <a href="#intro">I · Introduction</a>
+        <a href="#raf-model">II · RAF Model &amp; Related Work</a>
+        <a href="#math-model">III · Digital RAF Model</a>
+        <a href="#all-digital">IV · All-Digital Model</a>
+        <a href="#hardware">V · Hardware Implementation</a>
+        <a href="#results">VI · Results</a>
+        <a href="#conclusion">VII · Conclusion</a>
+      </div>
+    </nav>
+
+    <div id="lightbox">
+      <button class="lb-close" id="lbClose" aria-label="Close image">✕</button>
+      <img id="lbImg" src="" alt="" />
+      <div class="lb-cap" id="lbCap"></div>
+    </div>
+
+    <header class="hero wrap">
+      <div class="eyebrow">
+        <span>Interactive IEEE Paper Walkthrough • Based on IEEE Access (2023)</span>
+      </div>
+
+      <style>
+.paper-citation{
+    margin:2rem 0 2.5rem;
+    padding:18px 20px;
+    border:1px solid var(--line);
+    border-left:3px solid var(--accent);
+    border-radius:var(--radius);
+    background:var(--bg-panel);
+    max-width:640px;
+}
+
+.paper-citation-label{
+    font-family:var(--mono);
+    font-size:.72rem;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    color:var(--ink-faint);
+    margin-bottom:.8rem;
+}
+
+.paper-citation-title{
+    font-family:var(--serif);
+    font-size:1.08rem;
+    font-weight:600;
+    color:var(--ink);
+    line-height:1.4;
+    margin-bottom:.45rem;
+}
+
+.paper-citation-authors{
+    color:var(--ink-dim);
+    margin-bottom:.45rem;
+}
+
+.paper-citation-meta{
+    color:var(--ink-faint);
+    font-size:.92rem;
+    margin-bottom:.8rem;
+}
+
+.paper-citation a{
+    display:inline-block;
+    color:var(--accent);
+    text-decoration:none;
+    font-family:var(--mono);
+    font-size:.86rem;
+}
+
+.paper-citation a:hover{
+    text-decoration:underline;
+}
+
+.stat-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px;
+    margin:2rem 0;
+}
+
+.stat-card{
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:22px 18px;
+    text-align:center;
+    transition:border-color .2s ease, transform .2s ease;
+}
+
+.stat-card:hover{
+    border-color:var(--accent-soft);
+    transform:translateY(-2px);
+}
+
+.stat-num{
+    font-family:var(--serif);
+    font-size:2.25rem;
+    font-weight:700;
+    color:var(--accent);
+    line-height:1;
+    margin-bottom:.65rem;
+}
+
+.stat-label{
+    font-family:var(--sans);
+    font-size:.82rem;
+    color:var(--ink-dim);
+    line-height:1.45;
+}
+
+</style>
+
+
+
+      <h1>
+        Modeling and Designing of an
+        <br />
+        All-Digital Resonate-and-Fire Neuron Circuit
+      </h1>
+
+      <div class="hero-authors">
+        <span>Trung-Khanh Le</span>
+        <span>•</span>
+        <span>Trong-Tu Bui</span>
+        <span>•</span>
+        <span>Duc-Hung Le</span>
+      </div>
+
+      <div class="hero-affil">
+        Faculty of Electronics and Telecommunications<br />
+        University of Science · Vietnam National University, Ho Chi Minh City, Vietnam
+      </div>
+
+      <div class="paper-citation">
+
+
+    <a
+        href="https://doi.org/10.1109/ACCESS.2023.3287994"
+        target="_blank"
+        rel="noopener noreferrer"
+    >
+        DOI: 10.1109/ACCESS.2023.3287994 ↗
+    </a>
+</div>
+
+      <div class="hero-contact">
+        Corresponding author ·
+        <a href="mailto:ldhung@hcmus.edu.vn">ldhung@hcmus.edu.vn</a>
+      </div>
+
+      <div class="hero-adaptation" style="margin-top: 2rem;">
+  Adapted for web by <strong>Aditya Bhatnagar</strong>
+
+  <div style="margin-top: 0.6rem; font-size: 0.95rem; opacity: 0.8; line-height: 1.6;">
+    Electronics & Communication Engineering<br>
+    University School of Automation and Robotics<br>
+    New Delhi, India
+  </div>
+</div>
+
+      <div class="hero-scope" id="heroScope">
+    <!-- SVG GOES HERE -->
+     <svg
+    viewBox="0 0 700 260"
+    role="img"
+    aria-label="Animated illustration of a subthreshold oscillation that sums across two synaptic pulses, crosses threshold, fires a spike, and recovers through an after-hyperpolarization — motif inspired by the paper's resonate-and-fire behavior. Floating labels name each phase as the trace passes through it: first pulse, subthreshold oscillation, second pulse (summation), threshold crossing, spike, and after-hyperpolarization."
+  >
+    <!-- Axes -->
+    <line x1="40" y1="20" x2="40" y2="225" stroke="var(--line)" stroke-width="1" />
+    <line x1="40" y1="225" x2="670" y2="225" stroke="#2B2C28" stroke-width="1" />
+ 
+    <!-- Threshold -->
+    <line x1="40" y1="70" x2="670" y2="70" stroke="#6B8E23" stroke-width="1" stroke-dasharray="2 4" />
+    <text x="46" y="64" fill="#8FAF3C" font-family="IBM Plex Mono" font-size="11">threshold</text>
+ 
+    <!-- Rest -->
+    <line x1="40" y1="150" x2="670" y2="150" stroke="#2B2C28" stroke-width="1" stroke-dasharray="2 4" />
+    <text x="46" y="146" fill="var(--ink-faint)" font-family="IBM Plex Mono" font-size="11">rest</text>
+ 
+    <!-- Membrane trace: rest → EPSP #1 → damped ringing → EPSP #2 (summation)
+         → threshold crossing → spike → after-hyperpolarization → recovery -->
+    <path
+      id="scopeTrace"
+      d="M40,150
+         L110,150
+         C122,150 128,120 140,120
+         C152,120 160,150 175,150
+         C185,150 190,170 200,168
+         C210,166 215,132 225,132
+         C235,132 240,160 250,158
+         C258,157 262,142 270,142
+         C276,142 280,153 290,152
+         C296,151 298,146 303,146
+         C310,146 314,150 320,150
+         C335,150 345,110 365,80
+         C372,66 378,45 400,25
+         C412,10 420,60 428,120
+         C432,150 432,178 430,192
+         C426,212 460,214 500,158
+         C520,132 540,150 560,150
+         L670,150"
+      fill="none"
+      stroke="var(--accent)"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+ 
+    <!-- Moving dot: speed varies with the physiology — lingers through the
+         slow subthreshold ringing, snaps through the fast regenerative
+         upstroke, eases through the slower AHP recovery. -->
+    <circle id="scopeDot" r="4" fill="var(--accent)">
+      <animateMotion
+        dur="6s"
+        repeatCount="indefinite"
+        rotate="auto"
+        calcMode="linear"
+        keyPoints="0; 0.214; 0.444; 0.516; 0.537; 0.571; 0.619; 0.730; 1"
+        keyTimes="0;   0.12;  0.40;  0.52;  0.56;  0.60;  0.70;  0.90;  1"
+      >
+        <mpath href="#scopeTrace" />
+      </animateMotion>
+      <animate
+        attributeName="fill"
+        dur="6s"
+        repeatCount="indefinite"
+        calcMode="discrete"
+        keyTimes="0; 0.56; 0.61; 1"
+        values="var(--accent); var(--accent); #C97B2E; var(--accent)"
+      />
+      <animate
+        attributeName="r"
+        dur="6s"
+        repeatCount="indefinite"
+        calcMode="linear"
+        keyTimes="0; 0.56; 0.60; 0.65; 1"
+        values="4; 4; 6.5; 4; 4"
+      />
+    </circle>
+ 
+    <!-- Educational floating labels, timed to the dot's actual position -->
+ 
+    <g opacity="0">
+      <animate attributeName="opacity" dur="6s" repeatCount="indefinite"
+        keyTimes="0; 0.02; 0.05; 0.13; 0.15; 1" values="0; 0; 1; 1; 0; 0" />
+      <animateTransform attributeName="transform" type="translate" dur="2.6s"
+        repeatCount="indefinite" values="0,0; 0,-3; 0,0" />
+      <text x="140" y="97" text-anchor="middle" fill="var(--accent)" font-family="IBM Plex Mono" font-size="10.5">
+        1 · first pulse
+      </text>
+    </g>
+ 
+    <g opacity="0">
+      <animate attributeName="opacity" dur="6s" repeatCount="indefinite"
+        keyTimes="0; 0.15; 0.18; 0.38; 0.40; 1" values="0; 0; 1; 1; 0; 0" />
+      <animateTransform attributeName="transform" type="translate" dur="3.1s"
+        repeatCount="indefinite" values="0,0; 0,-3; 0,0" />
+      <text x="255" y="105" text-anchor="middle" fill="var(--accent)" font-family="IBM Plex Mono" font-size="10.5">
+        2 · subthreshold oscillation
+      </text>
+    </g>
+ 
+    <g opacity="0">
+      <animate attributeName="opacity" dur="6s" repeatCount="indefinite"
+        keyTimes="0; 0.40; 0.43; 0.51; 0.53; 1" values="0; 0; 1; 1; 0; 0" />
+      <animateTransform attributeName="transform" type="translate" dur="2.4s"
+        repeatCount="indefinite" values="0,0; 0,-3; 0,0" />
+      <text x="345" y="98" text-anchor="middle" fill="var(--accent)" font-family="IBM Plex Mono" font-size="10.5">
+        3 · second pulse (sums)
+      </text>
+    </g>
+ 
+    <g opacity="0">
+      <animate attributeName="opacity" dur="6s" repeatCount="indefinite"
+        keyTimes="0; 0.52; 0.545; 0.60; 0.615; 1" values="0; 0; 1; 1; 0; 0" />
+      <animateTransform attributeName="transform" type="translate" dur="1.4s"
+        repeatCount="indefinite" values="0,0; 0,-3; 0,0" />
+      <text x="388" y="48" text-anchor="middle" fill="var(--accent)" font-family="IBM Plex Mono" font-size="10.5">
+        4 · threshold crossing
+      </text>
+    </g>
+ 
+    <g opacity="0">
+      <animate attributeName="opacity" dur="6s" repeatCount="indefinite"
+        keyTimes="0; 0.575; 0.60; 0.66; 0.68; 1" values="0; 0; 1; 1; 0; 0" />
+      <animateTransform attributeName="transform" type="translate" dur="1s"
+        repeatCount="indefinite" values="0,0; 0,-2; 0,0" />
+      <text x="412" y="14" text-anchor="middle" fill="var(--accent)" font-family="IBM Plex Mono" font-weight="700" font-size="12">
+        5 · SPIKE
+      </text>
+    </g>
+ 
+    <g opacity="0">
+      <animate attributeName="opacity" dur="6s" repeatCount="indefinite"
+        keyTimes="0; 0.66; 0.69; 0.90; 0.93; 1" values="0; 0; 1; 1; 0; 0" />
+      <animateTransform attributeName="transform" type="translate" dur="3.4s"
+        repeatCount="indefinite" values="0,0; 0,-3; 0,0" />
+      <text x="465" y="209" text-anchor="middle" fill="var(--accent)" font-family="IBM Plex Mono" font-size="10.5">
+        6 · after-hyperpolarization
+      </text>
+    </g>
+ 
+  </svg>
+</div>
+
+
+      <section id="abstract" class="abstract">
+        <strong>Abstract.</strong> Integrate‑and‑fire (IAF) and leaky
+        integrate‑and‑fire (LIF) models are the popular models for spiking
+        neurons and spiking neuron networks (SNN). They lack the dynamic
+        properties of ordinary differential equation (ODE) models but are
+        simpler; more than half of all digital neuron implementations use IAF or
+        LIF. The resonate‑and‑fire (RAF) model proposed by Izhikevich keeps that
+        simplicity while adding real dynamic behavior, but it has lacked a
+        general hardware structure — most realizations have been analog. This
+        paper develops and simulates the RAF equations with digital pulses,
+        proposes block models of digital and all‑digital RAF neurons, and
+        verifies the design on an Intel 28&nbsp;nm Cyclone&nbsp;V FPGA. The
+        resulting register‑transfer‑level (RTL) design uses just
+        <strong>23 D flip‑flops</strong>, with no floating‑point operations and
+        no multipliers.
+        <div class="index-terms">
+          Index Terms — integrate‑and‑fire, leaky integrate‑and‑fire,
+          resonate‑and‑fire, dynamic, all‑digital, FPGA
+        </div>
+      </section>
+    </header>
+
+    <main class="wrap">
+      <!-- ================= INTRO ================= -->
+      <article class="section" id="intro">
+        <div class="section-num">Section I</div>
+        <h2>Introduction</h2>
+
+        <p>
+          Integrate‑and‑fire (IAF) and leaky integrate‑and‑fire (LIF) neuron
+          models have appeared in thousands of studies. Although they are more
+          than a century old, their simplicity has made them the default choice
+          for simulating and building neuromorphic hardware.
+        </p>
+
+        <p>
+          The most biophysically complete model is the conductance‑based
+          Hodgkin‑Huxley model (1952). Between 1960 and 2003, researchers
+          proposed reduced alternatives — FitzHugh‑Nagumo (1961/1962),
+          Morris‑Lecar (1981), Hindmarsh‑Rose (1984), and Izhikevich (2003) —
+          each trying to keep some of Hodgkin‑Huxley's realism while cutting its
+          computational cost.
+        </p>
+
+        <p>
+          The authors surveyed over 100 papers from 2000–2022 that turned
+          spiking‑neuron models into integrated circuits or FPGA emulations,
+          grouped by model: IAF (27 papers), LIF (37), FitzHugh‑Nagumo (7),
+          Hindmarsh‑Rose (8), Morris‑Lecar (2), Spike Response Model (2),
+          Izhikevich (10), and others using non‑CMOS materials such as RRAMs,
+          memristors, biristors, and photonic components (6).
+        </p>
+
+        <div class="plain">
+          <div class="plain-label">🔍 In Layman's Terms</div>
+          <p>
+            Before building anything new, the authors did a literature census:
+            of 100 hardware neuron papers from the last two decades, more than
+            half used the two oldest, simplest models (IAF/LIF). More biologically realistic neuron models were usually implemented as analog circuits rather than efficient digital hardware, because translating their differential equations into digital logic is much harder.
+          </p>
+        </div>
+
+        <div style="width: 100%; margin: 2rem 0">
+          <div
+            style="
+              text-align: center;
+              font-weight: bold;
+              margin-bottom: 0.35rem;
+            "
+          >
+            TABLE 1
+          </div>
+
+          <div
+            style="text-align: center; font-style: italic; margin-bottom: 1rem"
+          >
+            Hardware classification for 100 publications from 2000 to 2022.
+          </div>
+
+          <table
+            style="
+              width: 100%;
+              border-collapse: collapse;
+              table-layout: fixed;
+              font-size: clamp(0.55rem, 0.9vw, 0.95rem);
+              text-align: center;
+            "
+          >
+            <thead>
+              <tr>
+                <th
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  Model
+                </th>
+                <th
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  Analog CMOS
+                </th>
+                <th
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  Emulation
+                </th>
+                <th
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  Others
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  <strong>IAF</strong>
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  [1]–[9]<br />(32%)
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  [10]–[23]<br />(54%)
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  [24]–[27]<br />(14%)
+                </td>
+              </tr>
+
+              <tr>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  <strong>LIF</strong>
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  [28]–[41]<br />(38%)
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  [42]–[60]<br />(51%)
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  [61]–[64]<br />(11%)
+                </td>
+              </tr>
+
+              <tr>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  <strong>FitzHugh–Nagumo</strong>
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  [65]–[69]<br />(71%)
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  [70]<br />(29%)
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  None<br />(0%)
+                </td>
+              </tr>
+
+              <tr>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  <strong>Hindmarsh–Rose</strong>
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  [72]–[76]<br />(62%)
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  [77]–[79]<br />(38%)
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  None<br />(0%)
+                </td>
+              </tr>
+
+              <tr>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  <strong>Morris–Lecar</strong>
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  [80]<br />(50%)
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  None<br />(0%)
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  [81]<br />(50%)
+                </td>
+              </tr>
+
+              <tr>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  <strong>SRM</strong>
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  None<br />(0%)
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  [82]–[83]<br />(100%)
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  None<br />(0%)
+                </td>
+              </tr>
+
+              <tr>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  <strong>Izhikevich</strong>
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  [84]–[85]<br />(20%)
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  [86]–[93]<br />(80%)
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  None<br />(0%)
+                </td>
+              </tr>
+
+              <tr>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  <strong>Others</strong>
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  [97]–[98]<br />(33%)
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  [94], [95], [99]<br />(50%)
+                </td>
+                <td
+                  style="
+                    border: 1px solid #555;
+                    padding: 6px;
+                    overflow-wrap: anywhere;
+                  "
+                >
+                  [96]<br />(17%)
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <figure
+          class="fig"
+          tabindex="0"
+          data-full="fig1-2.png"
+          data-cap="Chart depicting the percentage of popular models that were turned into integrated circuits as well the percentage of hardware types"
+        >
+
+
+          <img src="fig1-2.png" alt="Figure 1,2" loading="lazy" />
+
+          <figcaption>
+            <b>Figure 1 & 2.</b> Chart depicting the percentage of popular
+            models that were turned into integrated circuits as well the
+            percentage of hardware types
+          </figcaption>
+        </figure>
+
+        <p>
+          This survey showed that digital implementation is the most common way
+          to deploy spiking‑neuron hardware, even though many researchers argue
+          analog circuits are more power‑ and area‑efficient for neuron cells.
+          The catch is that analog neuron hardware is vulnerable to device
+          mismatch, leakage power, technology scaling limits, noise, and
+          Process‑Voltage‑Temperature (PVT) variation — and it typically takes
+          longer to design than digital circuits.
+        </p>
+
+        <p>
+          Because IAF and LIF are so simple, they miss dynamic properties real
+          neurons have — like subthreshold oscillation and selective
+          communication — so spiking networks built from them can't exploit
+          those biological advantages. In 2001, Izhikevich proposed the
+          <strong>resonate‑and‑fire (RAF)</strong> model, adding three dynamic
+          properties to the IAF/LIF baseline while remaining, in his words, "an
+          analogue" of the IAF model — powerful like Hodgkin‑Huxley, simple like
+          IAF/LIF.
+        </p>
+
+        <p>
+          Yet from 2001 to 2022, only three integrated‑circuit realizations of
+          RAF existed, and two of those were analog. Recent work has instead
+          focused on FPGA emulations of the related Izhikevich model, typically
+          using clock‑driven algorithms: shifters, the Euler method, or the
+          CORDIC algorithm to avoid multiplication, and fixed‑point numbers to
+          avoid floating point. Dedicated finite‑state machines were sometimes
+          added to control model operation — all of which costs hardware
+          resources and, because of the clock‑driven approach, dynamic power.
+        </p>
+
+        <blockquote class="pull">
+          From the paper's motivation, the original RAF model was more hardware friendly than the Izhikevich
+          model and other conductance‑based models — simple like IAF/LIF, but
+          still carrying the important dynamic features of an analog neuron.
+        </blockquote>
+
+        <h3>Contributions</h3>
+        <ul class="contrib">
+          <li>
+            A mathematical model of a digital RAF neuron whose pulse train forms
+            the damped subthreshold oscillation, expressed in a complex domain
+            over time.
+          </li>
+          <li>
+            Block models of both a <em>digital</em> RAF neuron and an
+            <em>all‑digital</em> RAF neuron.
+          </li>
+          <li>
+            A sample‑and‑hold method that realizes the digital RAF model in
+            hardware without multipliers, adders, or real numbers.
+          </li>
+          <li>
+            A detailed digital circuit design of the all‑digital RAF neuron,
+            featuring a damped subthreshold oscillator with zero dynamic power
+            at rest.
+          </li>
+        </ul>
+
+        <div class="plain">
+          <div class="plain-label">🔍 In plain English</div>
+          <p>
+            Imagine pushing a child on a swing. One push starts an oscillation. If the next push arrives at the right moment, it reinforces the motion; if it arrives too late, almost nothing happens. The proposed hardware recreates this timing-dependent behavior using digital logic instead of continuously solving differential equations.
+          </p>
+        </div>
+
+        <div class="plain">
+  <div class="plain-label">What's Next</div>
+  <p>
+    Having established why existing neuron models are difficult to implement efficiently in digital hardware, the next section introduces the original Resonate-and-Fire model and examines why previous hardware implementations remained limited.
+  </p>
+</div>
+
+      </article>
+
+      
+
+      <!-- ================= RAF MODEL ================= -->
+      <article class="section" id="raf-model">
+        <div class="section-num">Section II</div>
+        <h2>The RAF Model &amp; Related Work</h2>
+
+        <p>
+          The Resonate-and-Fire (RAF) neuron, introduced by Izhikevich in 2001, extends the classical integrate-and-fire neuron with timing-sensitive resonance. Instead of responding only to the amount of input, it also responds to when that input arrives.
+        </p>
+
+        <figure
+          class="fig"
+          tabindex="0"
+          data-full="fig3.png"
+          data-cap="Figure 3. On the RAF neuron, the action potential was based on the relationship between the stimulus interval and the damped subthreshold oscillation of the membrane potential."
+        >
+
+        <div class="plain">
+          <div class="plain-label">🔍 In plain English</div>
+          <p>
+            Imagine pushing someone on a swing. One push starts the swing moving. If the second push arrives at the right moment, it adds to the motion. If it comes too early or too late, very little happens. The RAF neuron behaves similarly: the first input starts a damped oscillation, and whether the second input triggers a spike depends on its timing.
+          </p>
+        </div>        
+
+          <img src="fig3.png" alt="Figure 3" loading="lazy" />
+
+          <ul>
+<li>The first impulse excites the neuron.</li>
+<li>The membrane begins a damped oscillation.</li>
+<li>The oscillation gradually loses energy.</li>
+<li>If another impulse arrives during a high phase, both signals add together.</li>
+<li>The summed voltage crosses threshold and produces a spike.</li>
+</ul>
+
+        </figure>
+
+        <p>The oscillatory activity of an RAF neuron over time is:</p>
+        <div class="eq">
+          <span class="eq-num">(1)</span>$$z = x + iy, \qquad \dot{z} = (b +
+          i\omega)z$$
+        </div>
+        <p>
+          where <span class="mono">where z ∈ C</span> denotes a complex-valued neuron state, with
+          current part <em>x</em> and voltage part <em>y</em>. On the first
+          impulse, membrane voltage begins a damped subthreshold oscillation
+          with frequency <em>ω</em> and damping constant <em>b</em>, caused by
+          membrane impedance.
+        </p>
+
+
+
+        <p>
+          This is the central challenge addressed by the paper: although Equation (1) accurately describes the neuron's dynamics, it provides no obvious path to a digital circuit implementation. 
+        </p>
+
+        <article class="section">
+
+  <p>
+    An earlier analog realization
+    <a href="#" title="Reference [97]">
+      <abbr title="citation [97] in the source paper">[97]</abbr>
+    </a>
+    used a Lotka–Volterra oscillator built from subthreshold MOSFETs to play the
+    role of the damped oscillator. Although innovative, the circuit depended on
+    thermal voltage and supply voltage, making it highly sensitive to
+    <strong>process, voltage, and temperature (PVT) variation</strong> as well as
+    transistor mismatch.
+
+    A second design
+    <abbr title="citation [98]">[98]</abbr>
+    integrated incoming signals during the oscillation's high state and reset
+    during the low state. While similar in spirit, it ignored the actual timing
+    between successive impulses, preventing it from reproducing the RAF model's
+    selective communication property.
+  </p>
+
+  <div class="compare-wrap">
+
+    <div class="design-card">
+      <div class="design-tag">Design [97]</div>
+
+      <h3>Lotka–Volterra Analog Oscillator</h3>
+
+      <p>
+        Implemented the damped oscillator using a subthreshold MOSFET realization
+        of the Lotka–Volterra equations.
+      </p>
+
+      <div class="design-flaw">
+        <strong>Main limitation</strong><br>
+        Highly sensitive to thermal voltage, supply voltage, transistor mismatch,
+        and overall PVT variation.
+      </div>
+    </div>
+
+    <div class="design-card">
+
+      <div class="design-tag">Design [98]</div>
+
+      <h3>High/Low-State Integration</h3>
+
+      <p>
+        Integrated signals during the oscillation's high state and reset during
+        the low state to approximate resonate-and-fire behavior.
+      </p>
+
+      <div class="design-flaw">
+        <strong>Main limitation</strong><br>
+        Could not measure the true interval between impulses, so it lacked the
+        selective communication property of the original RAF neuron.
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="plain">
+    <div class="plain-label">🔍 In plain English</div>
+    <p>
+      Both circuits captured part of the RAF idea, but each lost something
+      important. One relied on fragile analog device physics, while the other
+      simplified the timing behavior so much that it could no longer recognize
+      precisely timed input spikes.
+    </p>
+  </div>
+
+</article>
+
+        
+      </article>
+
+      <article class="section" id="izhikevich-model-rdn">
+        
+
+  <h2>The Izhikevich Neuron Model &amp; Its Digital Hardware Realization</h2>
+
+  <p>
+    In 2003, Eugene Izhikevich proposed a universal neuron model that could
+    reproduce a wide variety of biological firing behaviors using a remarkably
+    compact system of only two ordinary differential equations.
+  </p>
+
+  <div class="eq">
+    $$
+    \begin{aligned}
+    v' &= 0.04v^2 + 5v + 140 - u + I,\\
+    u' &= a(bv-u),\\
+    &\text{if }v \ge 30\text{ mV, then }v \leftarrow c,\;u \leftarrow u+d.
+    \end{aligned}
+    $$
+  </div>
+
+  <p>
+    Here, <em>v</em> represents the membrane potential while <em>u</em> models the
+    membrane recovery process. Setting
+    <span class="mono">a = 0.1</span>,
+    <span class="mono">b = 0.26</span>,
+    <span class="mono">c = −60</span>, and
+    <span class="mono">d = −1</span>
+    produces the characteristic <strong>resonator</strong> behavior.
+  </p>
+
+  <p>
+    The model quickly became one of the most influential neuron models because it
+    achieved an exceptional balance between <strong>simplicity</strong> and
+    <strong>diverse neuronal firing behaviors</strong>. Unlike the original RAF equations, it
+    eliminates complex-valued variables and describes neuron dynamics using only
+    two state variables. Despite this compact formulation, it can still reproduce
+    many different neuronal firing patterns — including resonator behavior — making
+    it practical for both neuroscience simulations and digital hardware
+    implementations.
+  </p>
+
+  <div class="plain">
+    <div class="plain-label">🔍 In plain English</div>
+    <p>
+      This model is famous because it does a lot with very little. Two variables,
+      no complex math, but still enough structure to mimic many real neuron
+      behaviors. That is why hardware people care about it.
+    </p>
+  </div>
+
+  <hr class="section-divider" />
+
+  <p>
+    To implement this model on digital hardware, a Japanese research group
+    proposed the <strong>Rotate-and-Fire Digital Spiking Neuron (RDN)</strong>
+    <abbr title="citation [99]">[99]</abbr>. Instead of representing the neuron state with continuous variables, the design encodes it using rotating bit patterns stored in two circular shift registers.
+  </p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 720 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="RDN control and datapath flow">
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L6,3 z" fill="var(--accent)"/>
+        </marker>
+        <linearGradient id="nodeGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="var(--bg-panel-2)"/>
+          <stop offset="100%" stop-color="var(--bg-panel)"/>
+        </linearGradient>
+      </defs>
+
+      <rect x="160" y="20" width="400" height="58" rx="12" fill="url(#nodeGrad)" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="360" y="45" text-anchor="middle" fill="var(--ink)" font-family="var(--sans)" font-size="15" font-weight="700">Circular Shifter A</text>
+      <text x="360" y="65" text-anchor="middle" fill="var(--ink-dim)" font-family="var(--sans)" font-size="12">Membrane Potential (v)</text>
+
+      <line x1="360" y1="78" x2="360" y2="108" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrow)"/>
+
+      <rect x="160" y="110" width="400" height="58" rx="12" fill="url(#nodeGrad)" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="360" y="135" text-anchor="middle" fill="var(--ink)" font-family="var(--sans)" font-size="15" font-weight="700">Circular Shifter B</text>
+      <text x="360" y="155" text-anchor="middle" fill="var(--ink-dim)" font-family="var(--sans)" font-size="12">Recovery Variable (u)</text>
+
+      <line x1="360" y1="168" x2="360" y2="198" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrow)"/>
+
+      <rect x="200" y="200" width="320" height="50" rx="12" fill="url(#nodeGrad)" stroke="var(--amber)" stroke-width="1.5"/>
+      <text x="360" y="230" text-anchor="middle" fill="var(--amber)" font-family="var(--sans)" font-size="15" font-weight="700">Five-State FSM</text>
+
+      <line x1="360" y1="250" x2="360" y2="280" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrow)"/>
+
+      <rect x="140" y="282" width="440" height="50" rx="12" fill="url(#nodeGrad)" stroke="var(--accent)" stroke-width="1.5"/>
+      <text x="360" y="312" text-anchor="middle" fill="var(--ink)" font-family="var(--sans)" font-size="15" font-weight="700">Reset &amp; Reconfigurable Logic</text>
+
+      <line x1="360" y1="332" x2="360" y2="362" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrow)"/>
+
+      <rect x="90" y="364" width="540" height="58" rx="12" fill="url(#nodeGrad)" stroke="var(--accent-hover)" stroke-width="1.5"/>
+      <text x="360" y="389" text-anchor="middle" fill="var(--accent-hover)" font-family="var(--sans)" font-size="15" font-weight="700">Adders · Subtractors · Counters · Comparators</text>
+      <text x="360" y="409" text-anchor="middle" fill="var(--ink-faint)" font-family="var(--sans)" font-size="11">Combinational &amp; sequential update logic</text>
+    </svg>
+    <div class="diagram-caption">RDN control &amp; datapath flow</div>
+  </div>
+
+  <p>
+    Each circular shifter always contains a single logic <strong>'1'</strong> that
+    continuously rotates through its cells, allowing the two registers to encode
+    the membrane potential and recovery variable over time. A dedicated
+    <strong>five-state finite-state machine (FSM)</strong> controls the shifting
+    direction, while reset circuitry and configurable interconnections recreate
+    the reset behavior of the Izhikevich equations.
+  </p>
+
+  <p>
+    The architecture is highly flexible and can reproduce
+    <strong>14 different neuron-like firing responses</strong>, making it a
+    general-purpose implementation of the <strong>Izhikevich model</strong> rather
+    than a circuit dedicated only to resonate-and-fire neurons.
+  </p>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-num">2</div>
+      <div class="stat-label">state variables (v, u)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">5</div>
+      <div class="stat-label">FSM control states</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">14</div>
+      <div class="stat-label">firing patterns reproduced</div>
+    </div>
+  </div>
+
+  <p>
+    However, this flexibility comes at a hardware cost. The implementation
+    requires numerous combinational and sequential components — including adders,
+    subtractors, counters, comparators, circular shifters, and a dedicated FSM — to
+    coordinate every update. Since the shift registers rotate continuously, bits
+    change state on every internal clock cycle, causing four flip-flops to switch
+    every cycle and increasing dynamic power consumption. This behavior contrasts
+    with biological neurons and simpler IAF, LIF, and RAF models, whose resting
+    states consume almost no dynamic switching power.
+  </p>
+
+  <strong>Even when the neuron is completely idle, the shift registers continue rotating. The hardware therefore consumes dynamic switching power even when no spikes are being generated.</strong>
+
+  <div class="plain">
+    <div class="plain-label">🔍 In plain English</div>
+    <p>
+      RDN is flexible, but it burns more hardware to do it. The registers keep
+      moving all the time, so the circuit is always switching instead of staying
+      quiet at rest.
+    </p>
+  </div>
+
+  <div class="note">
+    <strong>Trade-off:</strong> RDN trades power efficiency for flexibility —
+    continuous bit rotation keeps the circuit "always active," unlike biologically
+    event-driven spiking behavior.
+  </div>
+</article>
+
+      <!-- ================= MATH MODEL ================= -->
+      <article class="section" id="math-model">
+        <div class="section-num">Section III</div>
+        <h2>A Digital RAF Model in the Complex Domain</h2>
+        <h3>A. Model</h3>
+
+        <p>
+  The membrane potential of the original RAF model is a
+  <strong>damped subthreshold oscillation</strong>. In continuous-time
+  mathematical models, this type of oscillation is typically represented
+  by a damped sine wave. While this description is well suited for
+  analysis, it is not convenient for implementation using purely digital
+  hardware.
+</p>
+
+<p>
+  Instead of generating an analog sine wave, the authors model the
+  subthreshold oscillation as a <strong>damped pulse train</strong>. A pulse
+  train naturally matches digital logic because it consists of discrete
+  high and low states rather than continuously varying voltages. To obtain
+  an analytical expression for this digital waveform, the pulse train is
+  expanded using a <strong>Fourier series</strong>, giving the following
+  expression for the membrane potential:
+</p>
+        <div class="eq">
+          <span class="eq-num">(3)</span
+          >$$y(t)=v(t)=e^{-b(t-t_n)}\left\{Ad+\frac{2A}{\pi}\sum_{j=1}^{m}\frac{\sin(jπd)}{j}\cos\!\left[j\omega(t-t_n)\right]\right\}$$
+        </div>
+        <div class="eq">
+          <span class="eq-num">(4)</span>$$h_j=\frac{\sin(j\pi d)}{j},\qquad
+          j\in[1,m],\quad m\ge1,\quad m\in\mathbb{N}$$
+        </div>
+
+        <p>
+  Here, the exponential term models the gradual decay of the oscillation,
+  while the Fourier series reconstructs the damped pulse train from a sum
+  of harmonic cosine components. This provides a mathematical description
+  that remains suitable for analysis while closely matching the behavior
+  of a digital implementation.
+</p>
+
+        <p>
+          Here <em>A</em> is the membrane‑potential amplitude (in biology,
+          roughly −65&nbsp;mV to +30&nbsp;mV; in digital hardware, a logic level
+          such as +5&nbsp;V, +3.3&nbsp;V, or +1.8&nbsp;V), <em>d</em> is the
+          duty cycle, <em>ω</em> the subthreshold frequency, <em>b</em> the damping
+          constant (&lt;1), <em>m</em> the number of pulses, and
+          <em>t<sub>n</sub></em> the moment of the last impulse.
+        </p>
+
+        <p>
+          If <em>ω</em>&nbsp;=&nbsp;0 and <em>t</em>&nbsp;≫&nbsp;<em
+            >t<sub>n</sub></em
+          >, then <em>y(t)</em>&nbsp;=&nbsp;0 — a resting potential of zero,
+          unlike a real neuron's negative resting voltage. To give the model a
+          constant negative resting level with no extra parameters, the authors
+          add an offset of <span class="mono">−A/2</span>:
+        </p>
+        <div class="eq">
+          <span class="eq-num">(5)</span
+          >$$y(t)=v(t)=e^{-b(t-t_n)}\left\{Ad+\frac{2A}{\pi}\sum_{j=1}^{m}h_j\cos\!\left[j\omega(t-t_n)\right]\right\}-\frac{A}{2}$$
+        </div>
+
+        <p>
+          The membrane current follows the conductance‑model relation
+          <span class="mono">I(t)=CV̇</span>:
+        </p>
+        <div class="eq"><span class="eq-num">(6)</span>$$I(t)=C\dot{V}$$</div>
+
+        <details class="deeper">
+          <summary>Go deeper — deriving the current part x(t)</summary>
+          <div class="deeper-body">
+            <p>
+              Differentiating (5) with respect to time gives the current part of
+              the neuron's state:
+            </p>
+            <div class="eq">
+              <span class="eq-num">(7)</span>
+              $$ \begin{aligned} x(t)=I(t) &= C\frac{dv}{dt}=C\frac{dy}{dt}\\
+              &=Ce^{-b(t-t_n)}\Biggl[-b\Bigl\{Ad+\frac{2A}{\pi}\sum_{j=1}^{m}h_j\cos\!\bigl(j\omega(t-t_n)\bigr)\Bigr\}\\
+              &\qquad-\frac{2A}{\pi}\sum_{j=1}^{m}j\,h_j\sin\!\bigl(j\omega(t-t_n)\bigr)\Biggr]
+              \end{aligned} $$
+            </div>
+          </div>
+        </details>
+
+        <p>
+          Based on [100] and [108], we assume that if there is any injected current while the membrane potential is oscillating, the state of the neuron is described by the following equation:
+        </p>
+        <div class="eq">
+          <span class="eq-num">(8)</span
+          >$$\dot{z}=(b+i\omega)z+J_{\text{injected}}$$
+        </div>
+
+        <details class="deeper">
+          <summary>
+            Go deeper — solving for total membrane potential z(t)
+          </summary>
+          <div class="deeper-body">
+            <div class="eq">
+              <span class="eq-num">(9)</span>
+              $$z(t)=\int\left[(b+i\omega)z+J_{\text{injected}}\right]dt=\int(b+i\omega)z\,dt+\int
+              J_{\text{injected}}\,dt=x(t)+iy(t)+\int J_{\text{injected}}\,dt$$
+            </div>
+          <p>
+  Since the neuron's state is represented as a complex quantity containing
+  both a current component and a voltage component, the integral of the
+  injected current must also contain both parts. Otherwise, the voltage
+  component of the neuron's state would remain unaffected by the injected
+  current. The authors therefore assume that the injected current can be
+  written as:
+</p>
+            <div class="eq">
+              <span class="eq-num">(10)</span>$$\int
+              J_{\text{injected}}\,dt=I_{\text{injected}}+iV(t-t_n)$$
+            </div>
+            <p>
+              where <span class="mono">I_injected</span> is a constant DC
+              injected current and <span class="mono">V(t−t_n)</span> is the
+              voltage integrated into the neuron's body at moment
+              <em>t<sub>n</sub></em
+              >. So:
+            </p>
+            <div class="eq">
+              <span class="eq-num">(11)</span
+              >$$z(t)=x(t)+I_{\text{injected}}+i\left[y(t)+V(t-t_n)\right]$$
+            </div>
+          </div>
+        </details>
+
+        <p>
+          Equation (11) suggests that the neuron's behavior can be interpreted as two parallel operations: a
+          <strong>damped subthreshold oscillation</strong> of membrane potential
+          (integration from Na+ channels) and an
+          <strong>integration of current impulses</strong> (from Na⁺ channels).
+          Their sum is the action potential. This structure gives the block
+          model in <strong>Figure 4</strong> of the source paper: a damped
+          oscillator plays the role of the dendrite membrane, an integrator
+          plays the role of the neuron's body, and a summing block — the axon
+          hillock — combines them into the action potential.
+
+          <figure
+            class="fig"
+            tabindex="0"
+            data-full="assets/fig4_animated.svg"
+            data-cap="Figure 4. All-digital block model of the RAF neuron — animated reconstruction. A current pulse splits into the damped oscillator and integrator branches; the oscillator's output passes through logistic block L1, both branches sum at Sigma, and the result fires through L2 as an all-or-none action potential."
+          >
+            <span class="fig-tag reconstructed">Figure 4</span>
+            <svg
+              viewBox="0 0 760 320"
+              xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              role="img"
+              style="background: #1c1c1c; border-radius: 2px"
+              aria-label="Animated block diagram of the all-digital RAF neuron model"
+            >
+              <title>All-digital RAF neuron block model, animated</title>
+
+              <polygon
+                points="133,20 522,20 560,58 560,262 522,300 133,300 95,262 95,58"
+                fill="none"
+                stroke="#e6e6e6"
+                stroke-width="1"
+                stroke-dasharray="4 4"
+              />
+              <text
+                x="328"
+                y="42"
+                text-anchor="middle"
+                fill="#f5f5f5"
+                font-family="Fraunces, serif"
+                font-size="18"
+                font-style="italic"
+              >
+                z(t)
+              </text>
+
+              <circle
+                cx="45"
+                cy="170"
+                r="18"
+                fill="none"
+                stroke="#9a9a9a"
+                stroke-width="1.5"
+              />
+              <line
+                x1="45"
+                y1="188"
+                x2="45"
+                y2="196"
+                stroke="#9a9a9a"
+                stroke-width="1.5"
+              />
+              <line
+                x1="35"
+                y1="200"
+                x2="55"
+                y2="200"
+                stroke="#9a9a9a"
+                stroke-width="1.5"
+              />
+              <line
+                x1="39"
+                y1="206"
+                x2="51"
+                y2="206"
+                stroke="#9a9a9a"
+                stroke-width="1.5"
+              />
+              <line
+                x1="42"
+                y1="212"
+                x2="48"
+                y2="212"
+                stroke="#9a9a9a"
+                stroke-width="1.5"
+              />
+              <text
+                x="45"
+                y="128"
+                text-anchor="middle"
+                fill="#cfcfcf"
+                font-family="IBM Plex Mono, monospace"
+                font-size="11"
+              >
+                I_injected
+              </text>
+              <line
+                x1="63"
+                y1="170"
+                x2="95"
+                y2="170"
+                stroke="#e6e6e6"
+                stroke-width="1.5"
+              />
+
+              <path
+                id="pathToOsc"
+                d="M95,170 L95,95 L168,95"
+                fill="none"
+                stroke="#e6e6e6"
+                stroke-width="1.5"
+              />
+              <path
+                id="pathToInt"
+                d="M95,170 L95,225 L168,225"
+                fill="none"
+                stroke="#e6e6e6"
+                stroke-width="1.5"
+              />
+
+              <circle
+                id="oscCircle"
+                cx="210"
+                cy="95"
+                r="42"
+                fill="#262626"
+                stroke="#e6e6e6"
+                stroke-width="1.5"
+              />
+              <path
+                id="oscWave"
+                d="M178,95 C183,68 193,68 198,95 C203,118 211,118 216,95 C220,80 227,80 231,95 C234,104 238,104 240,98"
+                fill="none"
+                stroke="#8bc34a"
+                stroke-width="2"
+                stroke-linecap="round"
+                opacity="0.35"
+              />
+              <text
+                x="210"
+                y="153"
+                text-anchor="middle"
+                fill="#cfcfcf"
+                font-family="IBM Plex Mono, monospace"
+                font-size="10.5"
+              >
+                Damped oscillator
+              </text>
+
+              <circle
+                id="intCircle"
+                cx="210"
+                cy="225"
+                r="42"
+                fill="#262626"
+                stroke="#e6e6e6"
+                stroke-width="1.5"
+              />
+              <path
+                id="intCurve"
+                d="M180,238 C185,190 200,178 210,178 C222,178 226,200 232,218 C236,232 238,236 240,238"
+                fill="none"
+                stroke="#8bc34a"
+                stroke-width="2"
+                stroke-linecap="round"
+                opacity="0.35"
+              />
+              <text
+                x="210"
+                y="283"
+                text-anchor="middle"
+                fill="#cfcfcf"
+                font-family="IBM Plex Mono, monospace"
+                font-size="11"
+              >
+                Integrator
+              </text>
+
+              <line
+                x1="252"
+                y1="95"
+                x2="272"
+                y2="95"
+                stroke="#e6e6e6"
+                stroke-width="1.5"
+              />
+              <rect
+                id="l1Box"
+                x="272"
+                y="78"
+                width="34"
+                height="34"
+                rx="3"
+                fill="#262626"
+                stroke="#e6e6e6"
+                stroke-width="1.5"
+              />
+              <path
+                d="M279,103 C284,103 286,84 291,84 C296,84 298,90 300,90"
+                fill="none"
+                stroke="#8bc34a"
+                stroke-width="1.6"
+                stroke-linecap="round"
+              />
+              <text
+                x="289"
+                y="122"
+                text-anchor="middle"
+                fill="#9a9a9a"
+                font-family="IBM Plex Mono, monospace"
+                font-size="10"
+              >
+                L1
+              </text>
+
+              <path
+                id="pathL1ToSum"
+                d="M306,95 C345,95 360,118 380,134"
+                fill="none"
+                stroke="#e6e6e6"
+                stroke-width="1.5"
+              />
+              <path
+                id="pathIntToSum"
+                d="M252,225 C300,225 345,198 380,186"
+                fill="none"
+                stroke="#e6e6e6"
+                stroke-width="1.5"
+              />
+
+              <circle
+                id="sumCircle"
+                cx="380"
+                cy="160"
+                r="26"
+                fill="#262626"
+                stroke="#e6e6e6"
+                stroke-width="1.5"
+              />
+              <text
+                x="380"
+                y="166"
+                text-anchor="middle"
+                fill="#8bc34a"
+                font-family="IBM Plex Mono, monospace"
+                font-size="18"
+              >
+                &#931;
+              </text>
+
+              <line
+                x1="406"
+                y1="160"
+                x2="600"
+                y2="160"
+                stroke="#e6e6e6"
+                stroke-width="1.5"
+              />
+              <text
+                x="440"
+                y="148"
+                text-anchor="middle"
+                fill="#cfcfcf"
+                font-family="IBM Plex Mono, monospace"
+                font-size="10.5"
+                font-style="italic"
+              >
+                Im(z)
+              </text>
+
+              <rect
+                id="l2Box"
+                x="600"
+                y="143"
+                width="34"
+                height="34"
+                rx="3"
+                fill="#262626"
+                stroke="#e6e6e6"
+                stroke-width="1.5"
+              />
+              <path
+                d="M607,168 C612,168 614,149 619,149 C624,149 626,155 628,155"
+                fill="none"
+                stroke="#8bc34a"
+                stroke-width="1.6"
+                stroke-linecap="round"
+              />
+              <text
+                x="617"
+                y="192"
+                text-anchor="middle"
+                fill="#9a9a9a"
+                font-family="IBM Plex Mono, monospace"
+                font-size="10"
+              >
+                L2
+              </text>
+
+              <line
+                x1="634"
+                y1="160"
+                x2="710"
+                y2="160"
+                stroke="#8bc34a"
+                stroke-width="1.5"
+              />
+              <polygon points="710,160 700,155 700,165" fill="#8bc34a" />
+              <text
+                x="672"
+                y="140"
+                text-anchor="middle"
+                fill="#cfcfcf"
+                font-family="IBM Plex Mono, monospace"
+                font-size="10.5"
+              >
+                Action potential
+              </text>
+
+              <circle id="dot1a" r="4" fill="#8bc34a">
+                <animateMotion
+                  dur="4s"
+                  repeatCount="indefinite"
+                  calcMode="linear"
+                  keyPoints="0;0;1;1"
+                  keyTimes="0;0.00;0.20;1"
+                  path="M95,170 L95,95 L168,95"
+                />
+                <animate
+                  attributeName="opacity"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  values="0;0;1;1;0;0"
+                  keyTimes="0;0.00;0.02;0.19;0.20;1"
+                />
+              </circle>
+              <circle id="dot1b" r="4" fill="#8bc34a">
+                <animateMotion
+                  dur="4s"
+                  repeatCount="indefinite"
+                  calcMode="linear"
+                  keyPoints="0;0;1;1"
+                  keyTimes="0;0.00;0.20;1"
+                  path="M95,170 L95,225 L168,225"
+                />
+                <animate
+                  attributeName="opacity"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  values="0;0;1;1;0;0"
+                  keyTimes="0;0.00;0.02;0.19;0.20;1"
+                />
+              </circle>
+
+              <animate
+                xlink:href="#oscWave"
+                attributeName="opacity"
+                dur="4s"
+                repeatCount="indefinite"
+                values="0.35;0.35;1;1;0.35;0.35"
+                keyTimes="0;0.18;0.24;0.42;0.46;1"
+              />
+              <animate
+                xlink:href="#oscCircle"
+                attributeName="stroke"
+                dur="4s"
+                repeatCount="indefinite"
+                values="#e6e6e6;#e6e6e6;#8bc34a;#8bc34a;#e6e6e6;#e6e6e6"
+                keyTimes="0;0.18;0.24;0.42;0.46;1"
+              />
+              <animate
+                xlink:href="#intCurve"
+                attributeName="opacity"
+                dur="4s"
+                repeatCount="indefinite"
+                values="0.35;0.35;1;1;0.35;0.35"
+                keyTimes="0;0.18;0.24;0.42;0.46;1"
+              />
+              <animate
+                xlink:href="#intCircle"
+                attributeName="stroke"
+                dur="4s"
+                repeatCount="indefinite"
+                values="#e6e6e6;#e6e6e6;#8bc34a;#8bc34a;#e6e6e6;#e6e6e6"
+                keyTimes="0;0.18;0.24;0.42;0.46;1"
+              />
+              <animate
+                xlink:href="#l1Box"
+                attributeName="stroke"
+                dur="4s"
+                repeatCount="indefinite"
+                values="#e6e6e6;#e6e6e6;#8bc34a;#8bc34a;#e6e6e6;#e6e6e6"
+                keyTimes="0;0.20;0.26;0.40;0.46;1"
+              />
+
+              <circle id="dot2a" r="4" fill="#8bc34a">
+                <animateMotion
+                  dur="4s"
+                  repeatCount="indefinite"
+                  calcMode="linear"
+                  keyPoints="0;0;1;1"
+                  keyTimes="0;0.24;0.44;1"
+                  path="M306,95 C345,95 360,118 380,134"
+                />
+                <animate
+                  attributeName="opacity"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  values="0;0;1;1;0;0"
+                  keyTimes="0;0.24;0.26;0.43;0.44;1"
+                />
+              </circle>
+              <circle id="dot2b" r="4" fill="#8bc34a">
+                <animateMotion
+                  dur="4s"
+                  repeatCount="indefinite"
+                  calcMode="linear"
+                  keyPoints="0;0;1;1"
+                  keyTimes="0;0.24;0.44;1"
+                  path="M252,225 C300,225 345,198 380,186"
+                />
+                <animate
+                  attributeName="opacity"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  values="0;0;1;1;0;0"
+                  keyTimes="0;0.24;0.26;0.43;0.44;1"
+                />
+              </circle>
+
+              <animateTransform
+                xlink:href="#sumCircle"
+                attributeName="transform"
+                type="scale"
+                additive="sum"
+                dur="4s"
+                repeatCount="indefinite"
+                values="1 1;1 1;1.18 1.18;1 1;1 1"
+                keyTimes="0;0.42;0.47;0.52;1"
+                calcMode="linear"
+              />
+              <animate
+                xlink:href="#sumCircle"
+                attributeName="stroke"
+                dur="4s"
+                repeatCount="indefinite"
+                values="#e6e6e6;#e6e6e6;#8bc34a;#e6e6e6;#e6e6e6"
+                keyTimes="0;0.42;0.47;0.55;1"
+              />
+
+              <circle id="dot3" r="4.5" fill="#8bc34a">
+                <animateMotion
+                  dur="4s"
+                  repeatCount="indefinite"
+                  calcMode="linear"
+                  keyPoints="0;0;1;1"
+                  keyTimes="0;0.48;0.62;1"
+                  path="M406,160 L600,160"
+                />
+                <animate
+                  attributeName="opacity"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  values="0;0;1;1;0;0"
+                  keyTimes="0;0.48;0.50;0.61;0.62;1"
+                />
+              </circle>
+
+              <animate
+                xlink:href="#l2Box"
+                attributeName="stroke"
+                dur="4s"
+                repeatCount="indefinite"
+                values="#e6e6e6;#e6e6e6;#8bc34a;#8bc34a;#e6e6e6;#e6e6e6"
+                keyTimes="0;0.60;0.64;0.76;0.80;1"
+              />
+
+              <circle id="dot4" r="4.5" fill="#8bc34a">
+                <animateMotion
+                  dur="4s"
+                  repeatCount="indefinite"
+                  calcMode="linear"
+                  keyPoints="0;0;1;1"
+                  keyTimes="0;0.64;0.78;1"
+                  path="M634,160 L706,160"
+                />
+                <animate
+                  attributeName="opacity"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  values="0;0;1;1;0;0"
+                  keyTimes="0;0.64;0.66;0.77;0.78;1"
+                />
+              </circle>
+
+              <circle
+                id="burst"
+                cx="710"
+                cy="160"
+                r="3"
+                fill="none"
+                stroke="#8bc34a"
+                stroke-width="2"
+              >
+                <animate
+                  attributeName="r"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  values="3;3;18;3"
+                  keyTimes="0;0.76;0.90;1"
+                />
+                <animate
+                  attributeName="opacity"
+                  dur="4s"
+                  repeatCount="indefinite"
+                  values="0;0;0.9;0"
+                  keyTimes="0;0.76;0.80;0.92"
+                />
+              </circle>
+            </svg>
+            <figcaption>
+              <b>A block model of the Resonate and Fire Neuron Model.</b>
+            </figcaption>
+          </figure>
+        </p>
+
+        <p>
+          Solving the integrator's potential by superposition (assuming
+          <em>ω</em>&nbsp;=&nbsp;0, <em>t</em>&nbsp;≫&nbsp;<em>t<sub>n</sub></em
+          >) gives capacitor‑discharge behavior:
+        </p>
+        <div class="eq">
+          <span class="eq-num">(12)</span
+          >$$z(t)\big|_{\omega=0}=I_{\text{injected}}+i\left[-\frac{A}{2}+V(t-t_n)\right]$$
+        </div>
+        <div class="eq">
+          <span class="eq-num">(13)</span>$$V(t-t_n)=V_C(t)=V_n e^{-b(t-t_n)}$$
+        </div>
+        <p>
+          where <em>V<sub>C</sub>(t)</em> is the integrator's potential and
+          <em>b</em> doubles as the neuron's time constant (membrane impedance).
+          The charged potential at <em>t<sub>n</sub></em> is:
+        </p>
+        <div class="eq">
+          <span class="eq-num">(14)</span
+          >$$V_n=y(t)\big|_{t_n}+V_C(t)\big|_{t_n}+V_{\text{injected}}=y(t)\big|_{t_n}+V_C(t)\big|_{t_n}+b\tau
+          I_{\text{injected}}$$
+        </div>
+        <p>giving the neuron's action potential:</p>
+        <div class="eq">
+          <span class="eq-num">(15)</span
+          >$$V_A(t)=\operatorname{Im}(z(t))=y(t)+V_n e^{-b(t-t_n)}$$
+        </div>
+        <p>
+          <em>V<sub>A</sub></em> therefore mixes subthreshold oscillation with
+          spikes. In biology, dynamic polarization strips the subthreshold part
+          out along the axon, so the action potential leaving the neuron becomes
+          an <strong>all‑or‑none spike</strong> — effectively a digital pulse.
+        </p>
+
+        <p>
+          A resonator (unlike a pure integrator) doesn't naturally have
+          all‑or‑none spikes — that depends on eigenfrequency, with a zero
+          eigenfrequency reducing RAF to an integrator. Since subthreshold
+          oscillation isn't useful for digital communication, the authors force
+          all‑or‑none spikes in both cases by passing the total potential
+          through a logistic function:
+        </p>
+        <div class="eq">
+          <span class="eq-num">(16)</span
+          >$$V_{DA}(t)=\frac{1}{1+e^{-k\left[V_A(t)-V_{TH}\right]}},\qquad
+          k\in\mathbb{R}$$
+        </div>
+        <p>
+          Small <em>k</em> (e.g. 1 or 2) preserves subthreshold ripple in
+          <em>V<sub>DA</sub></em
+          >; very large <em>k</em> makes it a true digital pulse.
+          <em>V<sub>TH</sub></em> is set above the sum of the oscillation's peak
+          and part of the integrator's contribution:
+        </p>
+        <div class="eq">
+          <span class="eq-num">(17)</span
+          >$$V_{TH}=2y(0)=A\left(2d-1+\frac{4}{\pi}\sum_{j=1}^{m}h_j\right)$$
+        </div>
+
+        <p>
+          Putting (5), (7), (11), (13), (14), (16) and (17) together gives the
+          full digital RAF (DRAF) equation system:
+        </p>
+        <div class="eq">
+          <span class="eq-num">(18)</span>
+          $$ \left\{ \begin{aligned} h_j &= \frac{1}{j}\sin(j\pi d),\quad
+          j\in[1,m],\ m\ge1,\ m\in\mathbb{N}\\[.4em] V_{TH} &=
+          A\left(2d-1+\frac{4}{\pi}\sum_{j=1}^{m}h_j\right)\\[.4em] y(t) &=
+          e^{-b(t-t_n)}\left\{Ad+\frac{2A}{\pi}\sum_{j=1}^{m}h_j\cos\!\left[j\omega(t-t_n)\right]\right\}-\frac{A}{2}\\[.4em]
+          x(t) &=
+          Ce^{-b(t-t_n)}\Biggl\{-b\Bigl[Ad+\frac{2A}{\pi}\sum_{j=1}^{m}h_j\cos\!\bigl(j\omega(t-t_n)\bigr)\Bigr]-\frac{2A}{\pi}\sum_{j=1}^{m}j
+          h_j\sin\!\bigl(j\omega(t-t_n)\bigr)\Biggr\}\\[.4em] V_n &=
+          y(t)\big|_{t_n}+V_C(t)\big|_{t_n}+b\tau I_{\text{injected}}\\[.4em]
+          z(t) &= x(t)+I_{\text{injected}}+i\left[y(t)+V_n
+          e^{-b(t-t_n)}\right]\\[.4em] V_{DA}(t) &=
+          \frac{1}{1+e^{-k\left(\operatorname{Im}(z(t))-V_{TH}\right)}}
+          \end{aligned} \right. $$
+        </div>
+        <p>
+          <strong>Fixed parameters:</strong>
+          <span class="mono">A, m, b, k</span> — depend on hardware
+          characteristics (voltage level, how fast the neuron returns to rest).
+          <strong>Configurable parameters:</strong>
+          <span class="mono">d, ω</span> — duty cycle and subthreshold
+          frequency, which act like a perceptron's weights, tuned to data and
+          application.
+        </p>
+
+        <figure
+          class="fig"
+          tabindex="0"
+          data-full="fig5.png"
+          data-cap="Figure 5. Proposed block model of the digital RAF neuron model."
+        >
+          <span class="fig-tag">Figure 5</span>
+
+          <img src="fig5.png" alt="Figure 5" loading="lazy" />
+
+          <figcaption>
+            <b>Figure 5.</b> Proposed block model of the digital RAF neuron
+            model.
+          </figcaption>
+        </figure>
+
+        <div class="plain">
+  <div class="plain-label">💡 One way to think about it (Analogy)</div>
+
+  <p>
+    The following is an analogy to build intuition—it is
+    <strong>not part of the paper's mathematical formulation.</strong>
+  </p>
+
+  <p>
+    Imagine striking a bell. One parameter controls how long the ringing lasts,
+    while another controls the ringing frequency. If a second strike arrives
+    while the bell is still ringing strongly, the combined vibration exceeds a
+    threshold and produces an output. The equations in this section formalize
+    that intuition by representing the oscillation, defining the threshold, and
+    converting the result into a digital spike.
+  </p>
+</div>
+
+        <!-- /* Simulation section */ -->
+        <h3>B. Simulation (R language)</h3>
+        <p>
+          Fixed parameters:
+          <span class="mono">A = 1, m = 3, b = 0.02, k = 5000</span>.
+          Configurable parameters: <span class="mono">d = 0.3</span> (30%),
+          <span class="mono">ω ≈ 125.7 rad/s</span> (20 Hz). Simulation length
+          300 ms, resolution <span class="mono">τ = dt = 0.1 ms</span>,
+          threshold <span class="mono">V_TH ≈ 1.37</span>.
+        </p>
+
+        <h4
+          style="
+            font-family: var(--mono);
+            font-size: 0.9rem;
+            color: var(--ink-dim);
+            margin-top: 1.6em;
+          "
+        >
+          1) Evoking damped oscillation — single impulse at t<sub>n</sub> = 110
+          ms
+        </h4>
+        <p>
+          A single impulse (0.2 amplitude, 0.1 ms duration) pushes the membrane
+          potential up but stays below the 1.37 threshold, then evokes the
+          damped oscillation.
+        </p>
+
+        <figure
+          class="fig"
+          tabindex="0"
+          data-full="fig6.png"
+          data-cap="Figure 6. States of the DRAF neuron in a complex domain with one injected current pulse at tn = 110ms and dt = 0.1ms."
+        >
+          
+
+          <img src="fig6.png" alt="Figure 6" loading="lazy" />
+
+          <figcaption>
+            <b>Figure 6.</b> States of the DRAF neuron in a complex domain with
+            one injected current pulse at tn = 110ms and dt = 0.1ms.
+          </figcaption>
+        
+       
+          <div style="height: 20px;"></div>
+
+          <class="fig" tabindex="0" data-full="fig7.png" data-cap="Figure 7.
+          Potentials of the DRAF neuron's components over time with one injected
+          current pulse at tn = 110 ms and dt = 0.1 ms. " >
+          
+
+          <img src="fig7.png" alt="Figure 7" loading="lazy" />
+
+          <figcaption>
+            <b>Figure 7.</b> Potentials of the DRAF neuron's components over
+            time with one injected current pulse at tn = 110 ms and dt = 0.1 ms.
+          </figcaption>
+        </figure>
+
+        <p>
+          Resting level is −0.5. With <span class="mono">b = 0.02</span> and an
+          eigenperiod of 50 ms, the damped wave shows two significant pulses at
+          110 ms and 160 ms, the second peak being half the height of the first.
+          The integrator's <span class="mono">Vc</span> curve samples the
+          membrane potential at injection and leaks toward zero. In Fig. 6, a
+          white region marks all trajectories that simply decay back to rest,
+          while a gray region marks trajectories whose next crossing could
+          trigger a new oscillation.
+        </p>
+
+        <figure
+          class="fig"
+          tabindex="0"
+          data-full="fig8-11.png"
+          data-cap="Figures 8–11: total membrane potential and action potential for one pulse (top), and neuron-state trajectory plus component potentials for two pulses at 110 ms and 160 ms (bottom)."
+        >
+   
+          <img
+        src="fig8-11.png"
+        alt="Figure 1"
+        loading="lazy"
+    >
+          <figcaption>
+        <b>Figure 8, 9, 10, 11.
+    </figcaption>
+          
+        </figure>
+
+        <h4
+          style="
+            font-family: var(--mono);
+            font-size: 0.9rem;
+            color: var(--ink-dim);
+            margin-top: 1.6em;
+          "
+        >
+          2) Resonating event — second impulse exactly one eigenperiod later
+        </h4>
+        <p>
+          With the second impulse arriving 50 ms after the first (matching the
+          50 ms eigenperiod), the trajectory is pulled from a still‑elevated
+          state into the gray region again, this time crossing V_TH = 1.37 and
+          firing — the neuron <strong>resonates and fires</strong>.
+        </p>
+
+        <h4
+          style="
+            font-family: var(--mono);
+            font-size: 0.9rem;
+            color: var(--ink-dim);
+            margin-top: 1.6em;
+          "
+        >
+          3) Non‑resonating case — interval = half the eigenperiod
+        </h4>
+        <p>
+          With a shorter, mismatched interval, the trajectory is close to
+          resting when the later impulses arrive, and never rises high enough to
+          fire — only subthreshold ripple appears. This confirms the model's
+          <strong>frequency preference</strong>, also called selective
+          communication.
+        </p>
+
+        <figure
+          class="fig"
+          tabindex="0"
+          data-full="fig12-17.png"
+          data-cap="Figures 12–17: total membrane potential and action potential for two resonant pulses (top row), complex-plane trajectory for two pulses (top right), and the non-resonating case with three pulses at 110/130/160 ms (bottom row) showing only subthreshold ripple, no firing."
+        >
+          
+          <img
+            src="fig12-17.png"
+            alt="Six panels: membrane potential and single action spike for the resonant two-pulse case; complex-plane trajectories; and three traces for the non-resonating three-pulse case showing no firing."
+          />
+          <figcaption>
+            <b>Figures 12–13.</b> Membrane potential and resulting spike for two
+            resonant pulses (110, 160 ms). <b>Figure 15.</b> Complex-plane
+            trajectory, three pulses (110, 130, 160 ms).
+            <b>Figures 16–17.</b> Membrane potential and action potential for
+            the same three pulses — subthreshold ripple only, no spike, since
+            the 130→160 ms interval is half the eigenperiod.
+          </figcaption>
+        </figure>
+
+        <h4
+          style="
+            font-family: var(--mono);
+            font-size: 0.9rem;
+            color: var(--ink-dim);
+            margin-top: 1.6em;
+          "
+        >
+          4) Coincidence event — two impulses only 5 ms apart
+        </h4>
+        <p>
+          With duty cycle <span class="mono">d = 0.3</span> (a 15 ms high‑state
+          window) and only a 5 ms gap between two impulses, the integrator
+          hasn't leaked much energy and rises quickly to a high level. The
+          trajectory is already outside the "safe" white region when the second
+          impulse lands, so it easily crosses V_TH and fires — demonstrating
+          <strong>coincidence detection</strong>, the same property found in the
+          original RAF model.
+        </p>
+
+        
+      </article>
+
+      <!-- ================= ALL DIGITAL ================= -->
+      <article class="section" id="all-digital">
+        <div class="section-num">Section IV</div>
+        <h2>The All‑Digital Model</h2>
+
+        <p>
+  The simulations presented in Section III confirm that the proposed
+  <strong>Digital Resonate-and-Fire (DRAF)</strong> neuron successfully reproduces
+  the three defining dynamic properties of the original RAF model:
+  <strong>damped subthreshold oscillation</strong>,
+  <strong>selective communication</strong>, and
+  <strong>coincidence detection</strong>. Although the DRAF model already produces
+  all-or-none output spikes, the damped oscillator within the neuron still
+  generates an <strong>analog oscillatory waveform</strong> (as shown in
+  <strong>Figure&nbsp;7</strong>). To achieve a fully digital implementation, the
+  authors introduce an additional logistic function (<strong>L1</strong>)
+  immediately after the oscillator. This stage converts the analog damped
+  oscillation into a train of discrete digital pulses while preserving the
+  neuron's resonant behavior, resulting in the proposed
+  <strong>all-digital RAF model</strong>.
+</p>
+
+        <div class="plain">
+          <div class="plain-label">🔍 In plain English</div>
+          <p>
+            Up to this point, the damped oscillator still produces an analog-like
+  subthreshold waveform. To obtain a fully digital implementation, the authors
+  introduce an additional logistic function after the oscillator, converting
+  this waveform into a <strong>true digital pulse train</strong>. The resulting
+  pulse train preserves the timing and damping behavior of the original
+  oscillation while allowing the neuron to be implemented using standard
+  digital logic.
+          </p>
+        </div>
+        <p>The resonance detector operates as a small sequence detector whose logic states are summarized in Table 2. </p>
+        <div class="table-wrap">
+          <div class="table-title" style="padding: 10px 12px 0">
+            Table 2 — Action mechanism of resonance detection in the all-digital
+            RAF neuron circuit
+          </div>
+          <table id="table2">
+            <thead>
+              <tr>
+                <th>Step</th>
+                <th>Sub Clock</th>
+                <th>Impulse</th>
+                <th>Q0</th>
+                <th>Q1</th>
+                <th>Q2</th>
+                <th>RS_action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Reset</td>
+                <td>1</td>
+                <td>X</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+              </tr>
+              <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>↑</td>
+                <td>1</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>0</td>
+                <td>X</td>
+                <td>0</td>
+                <td>1</td>
+                <td>0</td>
+                <td>0</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>1</td>
+                <td>↑</td>
+                <td>1</td>
+                <td>1</td>
+                <td>0</td>
+                <td>0</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>0</td>
+                <td>X</td>
+                <td>0</td>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>1</td>
+                <td>0</td>
+                <td>0</td>
+                <td>1</td>
+                <td>0</td>
+                <td>0</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size: 0.9rem; color: var(--ink-dim)">
+          The subthreshold clock idles high at reset. The first impulse (Step 1)
+          evokes the NCO; the second impulse (Step 3) samples its second pulse.
+          During the transition from Step 3 to Step 4, the falling edge of the subthreshold clock shifts the sampled pulse into both Q1 and Q2. Their simultaneous high state asserts RS_action, after which Q2 is immediately cleared so that the detector is ready for the next resonance event, so
+          <span class="mono">RS_action</span> pulses high and Q2 resets — an
+          all-or-none spike is added to the action potential.
+        </p>
+
+        <p>
+          Using the same parameters as Section III‑B1 (damping
+          <span class="mono">b = 0.02</span>, producing two effective pulses),
+          the authors chose the half‑peak of the second pulse of the damped wave
+          as L1's threshold and simulated the full timeline in R:
+        </p>
+
+        <figure
+  class="fig"
+  tabindex="0"
+  data-full="assets/fig22_animated.svg"
+  data-cap="Figure 22. Simulation results of the all-digital RAF neuron using R language. Six tracks over 100-1080ms: Vc (integrator), Im(subOsc) (damped subthreshold oscillator), Vth (threshold), Im(cell_State) (total membrane potential), Action (output spikes), and Impulse (injected current train)."
+>
+  <span class="fig-tag reconstructed">Figure 22</span>
+  <svg
+    viewBox="0 0 1000 620"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    role="img"
+    style="background: #1c1c1c; border-radius: 2px"
+    aria-label="Animated simulation trace of the all-digital RAF neuron showing resonance, non-resonance, and coincidence detection events"
+  >
+    <title>All-digital RAF neuron simulation trace, animated</title>
+
+    <!-- Vertical gridlines every 50ms -->
+    <g stroke="#2e2e2e" stroke-width="1">
+      <line x1="70" y1="60" x2="70" y2="440"/>
+      <line x1="112.5" y1="60" x2="112.5" y2="440"/>
+      <line x1="155" y1="60" x2="155" y2="440"/>
+      <line x1="197.5" y1="60" x2="197.5" y2="440"/>
+      <line x1="240" y1="60" x2="240" y2="440"/>
+      <line x1="282.5" y1="60" x2="282.5" y2="440"/>
+      <line x1="325" y1="60" x2="325" y2="440"/>
+      <line x1="367.5" y1="60" x2="367.5" y2="440"/>
+      <line x1="410" y1="60" x2="410" y2="440"/>
+      <line x1="452.5" y1="60" x2="452.5" y2="440"/>
+      <line x1="495" y1="60" x2="495" y2="440"/>
+      <line x1="537.5" y1="60" x2="537.5" y2="440"/>
+      <line x1="580" y1="60" x2="580" y2="440"/>
+      <line x1="622.5" y1="60" x2="622.5" y2="440"/>
+      <line x1="665" y1="60" x2="665" y2="440"/>
+      <line x1="707.5" y1="60" x2="707.5" y2="440"/>
+      <line x1="750" y1="60" x2="750" y2="440"/>
+      <line x1="792.5" y1="60" x2="792.5" y2="440"/>
+      <line x1="835" y1="60" x2="835" y2="440"/>
+      <line x1="877.5" y1="60" x2="877.5" y2="440"/>
+    </g>
+
+    <!-- X axis labels every 100ms -->
+    <g font-family="IBM Plex Mono, monospace" font-size="10" fill="#8a8a8a" text-anchor="middle">
+      <text x="70" y="455">100</text>
+      <text x="155" y="455">200</text>
+      <text x="240" y="455">300</text>
+      <text x="325" y="455">400</text>
+      <text x="410" y="455">500</text>
+      <text x="495" y="455">600</text>
+      <text x="580" y="455">700</text>
+      <text x="665" y="455">800</text>
+      <text x="750" y="455">900</text>
+      <text x="835" y="455">1000</text>
+    </g>
+    <text x="500" y="475" text-anchor="middle" fill="#cfcfcf" font-family="IBM Plex Mono, monospace" font-size="12" font-style="italic">millisecond</text>
+
+    <!-- Track separator lines -->
+    <g stroke="#3a3a3a" stroke-width="1">
+      <line x1="70" y1="168" x2="930" y2="168"/>
+      <line x1="70" y1="296" x2="930" y2="296"/>
+      <line x1="70" y1="368" x2="930" y2="368"/>
+    </g>
+
+    <!-- Track labels -->
+    <g font-family="IBM Plex Mono, monospace" font-size="13" fill="#e6e6e6">
+      <text x="940" y="98">Vc</text>
+      <text x="940" y="150">Im(subOsc)</text>
+      <text x="940" y="205" fill="#d18b5a">Vth</text>
+      <text x="940" y="255">Im(cell_State)</text>
+      <text x="940" y="330">Action</text>
+      <text x="940" y="415">Impulse</text>
+    </g>
+
+    <!-- ===================== TRACK 1: Vc (blue) + Im(subOsc) (white square wave) ===================== -->
+    <!-- Im(subOsc): square-wave pulses at each injection event, silent otherwise -->
+    <path fill="none" stroke="#c9c9c9" stroke-width="1.4" stroke-dasharray="3 2" d="
+      M70,145 L78.5,145 L78.5,95 L91.25,95 L91.25,145 L121,145 L121,95 L133.75,95 L133.75,145
+      L240,145
+      L248.5,145 L248.5,95 L261.25,95 L261.25,145 L290.5,145 L290.5,95 L303.25,95 L303.25,145
+      L325,145 L329.25,145 L329.25,95 L337.75,95 L337.75,145 L367.5,145 L367.5,95 L380.25,95 L380.25,145
+      L410,145 L422.75,145 L422.75,95 L452.5,95
+      L465.25,95 L465.25,145 L495,145
+      L537.5,145 L537.5,95 L550.25,95 L550.25,145
+      L665,145 L677.75,145 L677.75,95 L707.5,95
+      L930,95
+    "/>
+
+    <!-- Vc integrator: blue curve, jumps at injections, decays; two big sustained humps after resonance/coincidence -->
+    <path id="vcCurve" fill="none" stroke="#5aa9e6" stroke-width="2" d="
+      M70,140 C74,140 76,120 78.5,110
+      C90,100 105,130 121,138
+      C128,140 132,120 133.75,115
+      C160,105 220,138 240,140
+      C244,140 246,120 248.5,112
+      C265,102 285,130 303.25,138
+      C310,140 320,132 325,128
+      C328,124 335,110 337.75,105
+      C355,98 370,120 380.25,130
+      C395,136 405,130 410,120
+      C415,108 420,95 422.75,88
+      C435,82 448,90 452.5,85
+      C458,80 462,72 465.25,68
+      C500,55 540,70 550.25,60
+      C570,50 600,58 622.5,68
+      C645,78 660,85 665,90
+      C670,95 675,100 677.75,98
+      C695,90 705,80 707.5,72
+      C715,60 720,50 723,45
+      C740,38 760,45 780,60
+      C810,80 850,110 880,130
+      C900,140 915,142 930,143
+    "/>
+
+    <!-- ===================== TRACK 2: Vth (dashed) + Im(cell_State) ===================== -->
+    <line x1="70" y1="205" x2="930" y2="205" stroke="#d18b5a" stroke-width="1.4" stroke-dasharray="6 4"/>
+
+    <path fill="none" stroke="#f0f0f0" stroke-width="2" d="
+      M70,290 L78.5,290 L78.5,240 L91.25,240 L91.25,290 L121,290 L121,240 L133.75,240 L133.75,290
+      L240,290
+      L248.5,290 L248.5,240 L261.25,240 L261.25,290 L290.5,290 L290.5,240 L303.25,240 L303.25,290
+      L325,290 L329.25,290 L329.25,240 L337.75,240 L337.75,290 L367.5,290 L367.5,240 L380.25,240 L380.25,290
+      L410,290 L422.75,290 L422.75,240
+      C435,220 445,195 452.5,178
+      C458,168 462,178 465.25,190
+      C475,220 490,255 495,270
+      L537.5,270 L537.5,220 L550.25,220 L550.25,270
+      L665,270 L677.75,270 L677.75,190
+      C685,170 695,182 700,200
+      C705,220 707,245 707.5,260
+      L730,285 L750,290
+      L930,290
+    "/>
+
+    <!-- Threshold-crossing highlight rings at the two events that actually spike -->
+    <circle id="cross1" cx="452.5" cy="178" r="4" fill="none" stroke="#8bc34a" stroke-width="2" opacity="0"/>
+    <circle id="cross2" cx="677.75" cy="190" r="4" fill="none" stroke="#8bc34a" stroke-width="2" opacity="0"/>
+
+    <!-- ===================== TRACK 3: Action (baseline flat, spikes only at t=550 and t=805) ===================== -->
+    <line x1="70" y1="345" x2="452" y2="345" stroke="#c9c9c9" stroke-width="1.6"/>
+    <path id="spike1" fill="none" stroke="#8bc34a" stroke-width="1.6" d="M452.5,345 L452.5,305 L465.25,305 L465.25,345"/>
+    <line x1="465.25" y1="345" x2="669" y2="345" stroke="#c9c9c9" stroke-width="1.6"/>
+    <path id="spike2" fill="none" stroke="#8bc34a" stroke-width="1.6" d="M669,345 L669,305 L681,305 L681,345"/>
+    <line x1="681" y1="345" x2="930" y2="345" stroke="#c9c9c9" stroke-width="1.6"/>
+
+    <!-- ===================== TRACK 4: Impulse (red ticks) ===================== -->
+    <g stroke="#e05c5c" stroke-width="1.8">
+      <line x1="78.5" y1="430" x2="78.5" y2="390"/>
+      <line x1="112.5" y1="430" x2="112.5" y2="390"/>
+      <line x1="248.5" y1="430" x2="248.5" y2="390"/>
+      <line x1="325" y1="430" x2="325" y2="390"/>
+      <line x1="410" y1="430" x2="410" y2="390"/>
+      <line x1="452.5" y1="430" x2="452.5" y2="390"/>
+      <line x1="537.5" y1="430" x2="537.5" y2="390"/>
+      <line x1="554.5" y1="430" x2="554.5" y2="390"/>
+      <line x1="665" y1="430" x2="665" y2="390"/>
+      <line x1="669.25" y1="430" x2="669.25" y2="390"/>
+    </g>
+
+    <!-- ===================== ANIMATED PLAYHEAD ===================== -->
+    <line id="playhead" x1="70" y1="60" x2="70" y2="440" stroke="#8bc34a" stroke-width="1.6" opacity="0.85">
+      <animate attributeName="x1" dur="16s" repeatCount="indefinite"
+        values="70;930;70" keyTimes="0;1;1" calcMode="linear"/>
+      <animate attributeName="x2" dur="16s" repeatCount="indefinite"
+        values="70;930;70" keyTimes="0;1;1" calcMode="linear"/>
+    </line>
+    <circle id="playheadDot" r="4" fill="#8bc34a">
+      <animateMotion dur="16s" repeatCount="indefinite" calcMode="linear"
+        path="M70,50 L930,50"/>
+    </circle>
+
+    <!-- Impulse arrival flashes -->
+    <g fill="#8bc34a">
+      <circle cx="78.5" cy="410" r="0"><animate attributeName="r" dur="16s" repeatCount="indefinite" values="0;0;7;0" keyTimes="0;0.008;0.02;0.05"/><animate attributeName="opacity" dur="16s" repeatCount="indefinite" values="0;0.8;0" keyTimes="0;0.012;0.05"/></circle>
+      <circle cx="248.5" cy="410" r="0"><animate attributeName="r" dur="16s" repeatCount="indefinite" values="0;0;7;0" keyTimes="0;0.208;0.22;0.25"/><animate attributeName="opacity" dur="16s" repeatCount="indefinite" values="0;0.8;0" keyTimes="0;0.214;0.25"/></circle>
+      <circle cx="325" cy="410" r="0"><animate attributeName="r" dur="16s" repeatCount="indefinite" values="0;0;7;0" keyTimes="0;0.3;0.315;0.34"/><animate attributeName="opacity" dur="16s" repeatCount="indefinite" values="0;0.8;0" keyTimes="0;0.306;0.34"/></circle>
+      <circle cx="452.5" cy="410" r="0"><animate attributeName="r" dur="16s" repeatCount="indefinite" values="0;0;9;0" keyTimes="0;0.453;0.47;0.5"/><animate attributeName="opacity" dur="16s" repeatCount="indefinite" values="0;1;0" keyTimes="0;0.459;0.5"/></circle>
+      <circle cx="669.25" cy="410" r="0"><animate attributeName="r" dur="16s" repeatCount="indefinite" values="0;0;9;0" keyTimes="0;0.713;0.73;0.76"/><animate attributeName="opacity" dur="16s" repeatCount="indefinite" values="0;1;0" keyTimes="0;0.719;0.76"/></circle>
+    </g>
+
+    <!-- Spike glow synced to playhead reaching 550ms and 805ms -->
+    <animate xlink:href="#spike1" attributeName="stroke" dur="16s" repeatCount="indefinite"
+      values="#8bc34a;#8bc34a;#d4ff9a;#8bc34a;#8bc34a" keyTimes="0;0.455;0.462;0.48;1"/>
+    <animate xlink:href="#spike2" attributeName="stroke" dur="16s" repeatCount="indefinite"
+      values="#8bc34a;#8bc34a;#d4ff9a;#8bc34a;#8bc34a" keyTimes="0;0.716;0.723;0.74;1"/>
+    <animate xlink:href="#cross1" attributeName="opacity" dur="16s" repeatCount="indefinite"
+      values="0;0;1;0" keyTimes="0;0.45;0.47;0.52"/>
+    <animate xlink:href="#cross1" attributeName="r" dur="16s" repeatCount="indefinite"
+      values="4;4;16;4" keyTimes="0;0.45;0.5;0.52"/>
+    <animate xlink:href="#cross2" attributeName="opacity" dur="16s" repeatCount="indefinite"
+      values="0;0;1;0" keyTimes="0;0.71;0.73;0.78"/>
+    <animate xlink:href="#cross2" attributeName="r" dur="16s" repeatCount="indefinite"
+      values="4;4;16;4" keyTimes="0;0.71;0.76;0.78"/>
+
+    <!-- Event annotation labels, fading in/out as the playhead reaches each region -->
+    <g font-family="IBM Plex Mono, monospace" font-size="10.5" text-anchor="middle">
+      <text x="284" y="75" fill="#9a9a9a" opacity="0">
+        Long doublet (310→400ms, 90ms interval) — no spike
+        <animate attributeName="opacity" dur="16s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.20;0.24;0.32;0.36;1"/>
+      </text>
+      <text x="480" y="75" fill="#8bc34a" opacity="0">
+        Resonance: 500→550ms = eigenperiod (50ms) — SPIKE
+        <animate attributeName="opacity" dur="16s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.40;0.44;0.50;0.54;1"/>
+      </text>
+      <text x="600" y="75" fill="#9a9a9a" opacity="0">
+        650→670ms doublet drops into low phase — no spike
+        <animate attributeName="opacity" dur="16s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.555;0.59;0.65;0.69;1"/>
+      </text>
+      <text x="700" y="75" fill="#8bc34a" opacity="0">
+        Coincidence: 800/805ms within 15ms duty cycle — SPIKE
+        <animate attributeName="opacity" dur="16s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.705;0.745;0.80;0.84;1"/>
+      </text>
+    </g>
+  </svg>
+  <figcaption>
+    <b>Figure 22.</b> Simulation results of the all-digital RAF neuron using R language. First injection at t = 110 ms evokes two digital pulses (50 ms eigenperiod, 15 ms duty cycle). A long doublet (310–400 ms, 90 ms interval) fails to spike. A doublet at 500/550 ms has the same interval exactly and resonates, firing at 550 ms. A doublet at 650/670 ms (20 ms interval) falls into the oscillation's low phase and produces no spike. A coincident pair at 800/805 ms (5 ms interval, within the 15 ms duty cycle) triggers the coincidence detector and fires again.
+  </figcaption>
+</figure>
+
+    <p>Notice that only the damped oscillator is converted into a digital pulse train. The integrator intentionally remains waveform-based at the model level because its role is memory storage, and digital integrators are already straightforward to implement in hardware. This is also one reason IAF and LIF models have been widely adopted in neuromorphic circuits.</p>
+
+    <div class="plain">
+  <div class="plain-label">🔍 In plain English</div>
+  <p>
+    Only the "ringing" part of the neuron is converted into digital pulses. The
+    memory part is already naturally suited to digital circuits, so there is no
+    need to redesign it. This keeps the architecture simpler while preserving
+    the neuron's original behavior.
+  </p>
+</div>
+
+        <p>Figure 22 illustrates four representative stimulus cases.</p>
+        <ul>
+          <li>
+            <strong>t = 110 ms</strong> — first injection evokes two digital
+            pulses (50 ms eigenperiod, 15 ms duty cycle) on
+            <span class="mono">Im(subOsc)</span>, then the oscillator falls
+            silent from 200–300 ms — analog damped wave has been converted into a digital pulse train.
+          </li>
+          <li>
+            <strong>310–400 ms</strong> — a doublet whose interval exceeds the eigenperiod: no spike on <span class="mono">Action</span>.
+          </li>
+          <li>
+            <strong>500–550 ms</strong> — a second doublet, spaced at the 50 ms
+            eigenperiod: <span class="mono">Im(cell_State)</span> crosses
+            <span class="mono">Vth</span>, producing an all-or-none spike at 550
+            ms.
+          </li>
+          <li>
+            <strong>650–670 ms</strong> — a 20 ms doublet, shorter than the
+            eigenperiod but the second impulse falls into the oscillation's low phase (15 ms duty
+            cycle): no spike between 650–800 ms.
+          </li>
+          <li>
+            <strong>800/805 ms</strong> — a 5 ms coincident doublet, well within
+            the 15 ms duty window: easily pulls membrane potential above threshold.
+          </li>
+        </ul>
+
+        <p>
+          These results demonstrate that a true digital pulse train can faithfully reproduce the RAF model's dynamic behaviors while remaining compatible with digital hardware. Consequently, the proposed digital and all-digital RAF models provide practical alternatives to traditional IAF and LIF neurons for hardware implementation.
+        </p>
+      </article>
+
+      <!-- ================= HARDWARE ================= -->
+      <article class="section" id="hardware">
+        <div class="section-num">Section V</div>
+        <h2>Hardware Implementation</h2>
+        <h3>A. Digital Circuit Design</h3>
+
+        <p>
+  In the proposed all-digital block model, the <strong>damped oscillator</strong>
+  and the first logistic function (<strong>L1</strong>) are merged into a single
+  hardware block implemented as either a
+  <strong>Digitally Controlled Oscillator (DCO)</strong> or, equivalently, a
+  <strong>Numerically Controlled Oscillator (NCO)</strong>. By enabling or
+  disabling the oscillator, this block generates the damped digital pulse train
+  required to reproduce the neuron's resonant dynamics. Meanwhile, the
+  <strong>integrator</strong> remains responsible for preserving the neuron's
+  internal state by storing the membrane potential at the moment each input
+  impulse is received.
+</p>
+
+        <p>
+          Visually, the relationship between membrane potential and injected
+          current (Fig. 3) mirrors an analog signal being captured by a sampling
+          clock in analog‑to‑digital conversion. So the authors implement the
+          integrator's job with a <strong>sample‑and‑hold</strong> circuit
+          (Figure 24 in the source paper): a D flip‑flop clocked by the current
+          impulses, with its data line fed by the oscillator (DCO/NCO). This
+          captures the oscillation's phase at the moment of injection into a
+          buffer that behaves like the integrator. Because only the two nearest
+          impulses matter for detecting resonance and coincidence,
+          <strong>2‑bit shifters</strong> serve as phase accumulators.
+        </p>
+
+        <div class="plain">
+          <div class="plain-label">🔍 In plain English</div>
+          <p>
+            Instead of continuously calculating the neuron's state every clock cycle, the circuit simply samples the oscillator whenever an input spike arrives. Each sample records whether the oscillation was in a high or low state at that instant, allowing later logic to detect resonance using only flip-flops and logic gates.
+          </p>
+        </div>
+
+        <p>
+  The authors observe that the relationship between the injected current and the
+  membrane potential closely resembles the operation of an
+  <strong>analog-to-digital converter (ADC)</strong>. Instead of continuously
+  integrating the oscillatory waveform, the circuit only needs to capture the
+  membrane state at the precise moment an input impulse arrives. Consequently,
+  the oscillator output is sampled only at these discrete instants, preserving
+  the neuron's state while greatly simplifying the hardware implementation.
+</p>
+
+        <figure
+    class="fig"
+    tabindex="0"
+    data-full="fig24.png"
+    data-cap="Figure 24. Sample-and-hold circuit used to implement the integrator in the all-digital RAF neuron."
+>
+    <span class="fig-tag">Figure 24</span>
+
+    <img
+        src="fig24.png"
+        alt="Figure 24"
+        loading="lazy"
+    >
+
+    <figcaption>
+         Figure 24 shows the sample-and-hold circuit that replaces the mathematical integrator. The injected impulse acts as the sampling clock, while the oscillator output becomes the sampled data. The stored value therefore represents the neuron's state at the exact moment of stimulation.
+    </figcaption>
+</figure>
+
+
+
+<figure
+    class="fig"
+    tabindex="0"
+    data-full="fig25.png"
+    data-cap="Figure 25. General schematic of the proposed all-digital RAF neuron cell."
+>
+
+
+    <img
+        src="fig25.png"
+        alt="Figure 25"
+        loading="lazy"
+    >
+
+    <figcaption>
+        <b>Figure 25.</b> General schematic of the proposed all-digital RAF neuron cell.
+    </figcaption>
+</figure>
+
+  <figure
+    class="fig"
+    tabindex="0"
+    data-full="fig26.png"
+    data-cap="Figure 26. Circuit design of the 8-bit numerically controlled oscillator (NCO)."
+>
+
+    <img
+        src="fig26-27.png"
+        alt="Figure 26 and 27"
+        loading="lazy"
+    >
+
+    <figcaption>
+        <b>Figure 26.</b> Circuit design of the 8-bit numerically controlled oscillator (NCO).
+    </figcaption>
+
+<div style="height: 2px;"></div>
+
+    <figcaption>
+        <b>Figure 27.</b> Delay circuit implementation used in the FPGA design.
+    </figcaption>
+</figure>
+
+        <p>Walking through Figure 25:</p>
+        <ul>
+          <li>
+            The <span class="mono">n</span>-bit <strong>NCO</strong> is
+            programmed by <span class="mono">Duty[n-1:0]</span> and
+            <span class="mono">Weight[n-1:0]</span> and driven by a high-speed
+            clock (removable if the NCO is a ring oscillator). An impulse sets
+            <span class="mono">Osc Enable</span> via DFF <strong>Q4</strong>,
+            enables the NCO. from reset to generate the subthreshold
+            oscillation. 
+          </li>
+          <li>
+            A <strong>3-bit shifter</strong> (<strong>Q5, Q6</strong> counting
+            pulses, <strong>Q7</strong> flipping on the third pulse) forms the
+            <strong>Oscillation Damper</strong> — it resets the NCO after three
+            pulses, holding that reset until a new impulse arrives. Because of
+            Q4, an impulse can't re-trigger an already-oscillating NCO; the NCO
+            only leaves reset once the gap since the last enabling impulse
+            exceeds three oscillation periods. This limits the oscillator to a finite number of pulses, reproducing the damped behavior predicted by the mathematical model.
+          </li>
+          <li>
+            Two sample-and-hold circuits, <strong>Q0</strong> and
+            <strong>Q8</strong>, catch the oscillation's phase on every
+            injection — Q0 during the oscillation's high phase (excitatory
+            injection), Q8 during the low phase (sampling inverted, high-level
+            pulses). An injection landing here implies the last doublet's
+            interval is between the duty cycle and the eigenperiod, so a reset
+            clears the resonance detector's phase accumulator.
+          </li>
+          <li>
+            After the first oscillation pulse, sampled data shifts into
+            <strong>Q1</strong> (latest bit) then <strong>Q2</strong> (oldest
+            bit) on the oscillation's falling edges — the
+            <strong>Resonance Detector</strong>. If both go high, the last two
+            impulses were spaced about one eigenperiod apart; an AND gate raises
+            <span class="mono">RS_action</span>, which is delayed briefly and
+            fed back to clear Q2 (keeping Q1's latest bit alive for continuous
+            firing under sustained resonance).
+          </li>
+          <li>
+            During the oscillation's high phase, the oscillator is effectively
+            stopped and the neuron behaves like a plain IAF neuron — coincidence
+            can't use the shifting clock, so a second buffer,
+            <strong>Q9</strong> after <strong>Q0</strong>, forms the
+            <strong>Coincidence Detector</strong>, clocked directly by the
+            injected pulse and accumulating '1's like a digital IAF neuron. An
+            AND gate again derives the action from Q0 and Q9, with the result
+            delayed and fed back to clear Q9.
+          </li>
+          <li>
+            The final action potential sums the resonance detector's and
+            coincidence detector's outputs. Excitatory spikes are OR'd into a
+            single spike train; inhibitory spikes pass through an XOR gate to
+            cancel excitatory ones (two inverters reduce a race condition
+            against the excitatory OR gate). Because XOR sums all impulses,
+            inhibitory spikes can also evoke the NCO's pulse train — reproducing
+            the RAF model's <strong>post-inhibitory spikes</strong> property.
+          </li>
+        </ul>
+        <p>
+          The whole design uses only basic logic gates. No multipliers, adders, floating-point arithmetic, or real-number operators are required. The entire neuron is constructed from standard logic gates and D flip-flops. (<span class="mono"
+            >NOT, AND, OR, XOR</span
+          >) and D flip-flops — a schematic that maps directly onto standard
+          CMOS VLSI processes.
+        </p>
+
+        <h3>B. Implementation on FPGA</h3>
+        <p>
+          The NCO can be built from digital self-oscillators such as ring
+          oscillators; on the FPGA (a clock-driven device) the authors instead
+          use an <strong>8-bit binary up-counter</strong> driven by a high-speed
+          clock (Figure 26 in the source paper), reset to a high output level,
+          with all internal flip-flops steady and switching frequency zero at
+          rest — so, per the dynamic power relation
+        </p>
+        <div class="eq">
+          <span class="eq-num">(19)</span>$$P_{\text{dynamic}}=\alpha \times V
+          \times f^2$$
+        </div>
+        <p>
+          dynamic power is zero while resting. Once "Reset" is released, the
+          counter compares its value to <span class="mono">Weight</span> and
+          <span class="mono">Duty</span> using XNOR/AND comparators to set the
+          oscillator's period and duty cycle. A delay cell — trivial in CMOS as
+          two series inverters, awkward on an FPGA — is realized with a
+          dedicated circuit (Figure 27).
+        </p>
+
+        <p>
+          Synthesizing the neuron cell (Figure 28, RTL structure) on an Intel
+          Cyclone V <span class="mono">5CSEBA6U23I7</span> with Quartus Prime
+          Lite required <strong>20 ALM units and 23 registers, These measurements were obtained after Quartus Prime Lite synthesis for an Intel Cyclone V FPGA.</strong> — the
+          source data behind Table 3. That budget suggests roughly
+          <strong>2000 neuron cells</strong> fit on this FPGA; using ALMs alone,
+          one neuron costs about <strong>54 ALM units</strong>, or
+          <strong>0.13%</strong> of the device's total ALMs.
+        </p>
+
+        <div class="table-wrap">
+          <div class="table-title" style="padding: 10px 12px 0">
+            Table 4 — Resource utilization for one neuron cell on an FPGA,
+            compared across publications
+          </div>
+          <table id="table4">
+            <thead>
+              <tr>
+                <th>Resource</th>
+                <th data-ref="[99]">[99]</th>
+                <th data-ref="[87]">[87]</th>
+                <th data-ref="[54]">[54]</th>
+                <th data-ref="[92]">[92]</th>
+                <th data-ref="[60]">[60]</th>
+                <th>This work</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Year</td>
+                <td>2011</td>
+                <td>2013</td>
+                <td>2021</td>
+                <td>2022</td>
+                <td>2022</td>
+                <td>2022</td>
+              </tr>
+              <tr>
+                <td>Model</td>
+                <td>RDN</td>
+                <td>IZK</td>
+                <td>LIF</td>
+                <td>IZK</td>
+                <td>LIF</td>
+                <td>DRAF</td>
+              </tr>
+              <tr>
+                <td>Target FPGA</td>
+                <td>Xilinx SPARTAN-3</td>
+                <td>Xilinx Virtex-4</td>
+                <td>Xilinx Zynq UltraScale+</td>
+                <td>Xilinx Zynq-7000Q</td>
+                <td>Xilinx Virtex-7</td>
+                <td>Altera Cyclone V</td>
+              </tr>
+              <tr>
+                <td>ALMs</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>20</td>
+              </tr>
+              <tr>
+                <td>LUTs</td>
+                <td>NA</td>
+                <td>1598</td>
+                <td>455</td>
+                <td>218</td>
+                <td>196</td>
+                <td>NA</td>
+              </tr>
+              <tr>
+                <td>Flip-flops</td>
+                <td>5</td>
+                <td>970</td>
+                <td>85</td>
+                <td>530</td>
+                <td>297</td>
+                <td>23</td>
+              </tr>
+              <tr>
+                <td>Multipliers</td>
+                <td>NA</td>
+                <td>1</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>0</td>
+              </tr>
+              <tr>
+                <td>Counters</td>
+                <td>3 (13-bit &amp; 2×4-bit)</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>1 (ALMs &amp; DFFs based)</td>
+              </tr>
+              <tr>
+                <td>Comparator</td>
+                <td>10</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>1 (ALMs based)</td>
+              </tr>
+              <tr>
+                <td>Adders</td>
+                <td>5</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>0</td>
+              </tr>
+              <tr>
+                <td>Subtractors</td>
+                <td>1</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>0</td>
+              </tr>
+              <tr>
+                <td>DSP blocks</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>6</td>
+                <td>NA</td>
+                <td>0</td>
+              </tr>
+              <tr>
+                <td>ROM</td>
+                <td>16×10-bit, 16×4-bit</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>NA</td>
+                <td>0</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Compared with previous implementations, the proposed neuron eliminates multipliers, adders, subtractors, DSP blocks, ROM, and large state machines. The reduction in hardware complexity follows directly from representing resonance with pulse timing instead of numerically solving differential equations.</p>
+
+        <div class="table-wrap">
+          <div class="table-title" style="padding: 10px 12px 0">
+            Table 5 — Analog RAF neuron [97] vs. this work's all-digital RAF
+            neuron
+          </div>
+          <table id="table5">
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>[97]</th>
+                <th>This work</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Year</td>
+                <td>2006</td>
+                <td>2022</td>
+              </tr>
+              <tr>
+                <td>CMOS process</td>
+                <td>AMI 0.35 μm</td>
+                <td>Intel 28 nm LP</td>
+              </tr>
+              <tr>
+                <td>Supply voltage</td>
+                <td>1.5 V</td>
+                <td>1.1 V</td>
+              </tr>
+              <tr>
+                <td>Eigenperiod</td>
+                <td>50 μs</td>
+                <td>50 μs</td>
+              </tr>
+              <tr>
+                <td>Impulse width</td>
+                <td>300 ns</td>
+                <td>200 ns</td>
+              </tr>
+              <tr>
+                <td>Response time, resonance event</td>
+                <td>NA</td>
+                <td>5 μs</td>
+              </tr>
+              <tr>
+                <td>Response time, coincidence event</td>
+                <td>NA</td>
+                <td>0 μs</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--ink-faint)">
+          Click a column header to sort either table.
+        </p>
+        <p>Because the proposed neuron is entirely digital, it is inherently free from process-voltage-temperature sensitivity that affected earlier analog RAF implementations.</p>
+      </article>
+
+      <style>
+/* ==============================
+   Theory → Hardware Mapping Card
+   ============================== */
+
+.model-map{
+  margin:3rem 0;
+  padding:1.8rem;
+  border:1px solid #2d332d;
+  border-radius:16px;
+  background:#111412;
+  overflow-x:auto;
+}
+
+.model-map-title{
+  margin:0 0 .35rem;
+  font-size:1.35rem;
+  font-weight:700;
+  color:#f4f4f2;
+}
+
+.model-map-subtitle{
+  margin:0 0 1.4rem;
+  color:#93a08f;
+  font-size:.95rem;
+}
+
+.model-map table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:650px;
+}
+
+.model-map th{
+  background:#556b2f;
+  color:#f8faf6;
+  text-align:left;
+  padding:.9rem 1rem;
+  font-size:.83rem;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+
+.model-map th:first-child{
+  border-radius:10px 0 0 10px;
+}
+
+.model-map th:last-child{
+  border-radius:0 10px 10px 0;
+}
+
+.model-map td{
+  padding:1rem;
+  border-bottom:1px solid #2b322b;
+  color:#e6e8e3;
+}
+
+.model-map tr:last-child td{
+  border-bottom:none;
+}
+
+.model-map td:first-child{
+  font-weight:600;
+  color:#9dbd5d;
+}
+
+.model-map td:nth-child(2){
+  width:45px;
+  text-align:center;
+  color:#78886d;
+  font-size:1.1rem;
+}
+
+.model-map tr:hover td{
+  background:#171c17;
+  transition:.18s;
+}
+
+.model-map-note{
+  margin-top:1.5rem;
+  padding:1rem 1.25rem;
+  border-left:4px solid #6b8e23;
+  background:#171c17;
+  color:#cfd7ca;
+  border-radius:10px;
+  font-style:italic;
+}
+
+@media(max-width:700px){
+
+  .model-map{
+    padding:1.2rem;
+  }
+
+}
+</style>
+
+<div class="model-map">
+
+<h3 class="model-map-title">
+From Mathematical Model to Hardware
+</h3>
+
+<p class="model-map-subtitle">
+Section V replaces each mathematical block introduced earlier with a digital hardware implementation while preserving the same computational behavior.
+</p>
+
+<table>
+
+<thead>
+<tr>
+<th>Mathematical Block (Section III)</th>
+<th></th>
+<th>Hardware Realization (Section V)</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr>
+<td>Damped Oscillator</td>
+<td>→</td>
+<td>Digitally Controlled Oscillator (DCO)</td>
+</tr>
+
+<tr>
+<td>Integrator</td>
+<td>→</td>
+<td>Sample-and-Hold Circuit</td>
+</tr>
+
+<tr>
+<td>Resonance Detector</td>
+<td>→</td>
+<td>Q1–Q2 Shift Register</td>
+</tr>
+
+<tr>
+<td>Coincidence Detector</td>
+<td>→</td>
+<td>Q0–Q9 Buffer Register</td>
+</tr>
+
+<tr>
+<td>Logistic Function (L2)</td>
+<td>→</td>
+<td>Output Logic</td>
+</tr>
+
+<tr>
+<td>Action Potential Generation</td>
+<td>→</td>
+<td>OR/XOR Output Stage</td>
+</tr>
+
+</tbody>
+
+</table>
+
+<div class="model-map-note">
+This mapping provides a direct correspondence between the mathematical DRAF neuron developed in Section III and the digital architecture implemented in Section V, illustrating how each computational component is translated into synthesizable FPGA hardware.
+</div>
+
+</div>
+
+      <!-- ================= RESULTS ================= -->
+      <article class="section" id="results">
+        <div class="section-num">Section VI</div>
+        <h2>Results</h2>
+        <h3>A. Simulation</h3>
+
+        <p>
+          The RTL was simulated in Verilog with a 5 MHz high-speed clock (<span
+            class="mono"
+            >f_iClk</span
+          >), NCO weight <span class="mono">nW = 250</span>, NCO duty
+          <span class="mono">nd = 100</span>, and injected-impulse duration
+          <span class="mono">τ = 1/f_iClk = 200 ns</span>. These settings give
+          an eigenfrequency <span class="mono">f_oClkSub = 20 kHz</span>,
+          eigenperiod <span class="mono">T = 50 μs</span>, and duty cycle
+          <span class="mono">d = 20 μs</span> (Figure 29 in the source paper).
+        </p>
+
+        
+
+ <!-- Insert figures 28 and 29 -->
+  <figure
+    class="fig"
+    tabindex="0"
+    data-full="fig28.png"
+    data-cap="Figure 28. RTL structure of the all-digital RAF neuron on an FPGA."
+>
+
+    <img
+        src="fig28.png"
+        alt="Figure 28"
+        loading="lazy"
+    >
+
+    <figcaption>
+        <b>Figure 28.</b> RTL structure of the all-digital RAF neuron on an FPGA.
+    </figcaption>
+</figure>
+
+<figure
+    class="fig"
+    tabindex="0"
+    data-full="fig29.png"
+    data-cap="Figure 29. Simulation results for the all-digital RAF neuron."
+>
+
+    <img
+        src="fig29.png"
+        alt="Figure 29"
+        loading="lazy"
+    >
+
+    <figcaption>
+        <b>Figure 29.</b> Simulation results for the all-digital RAF neuron.
+    </figcaption>
+</figure>
+<p>
+  <strong>Figure 29(a) — Excitatory spikes only.</strong> The neuron first
+  remains idle while the interval between successive excitatory spikes is long.
+  During this resting period, the NCO enable signal
+  (<span class="mono">enOsc</span>) stays high and the oscillator output
+  (<span class="mono">oClkSub</span>) remains inactive, resulting in essentially
+  zero dynamic switching activity. Long doublets and short but non-resonant
+  doublets do not produce an output spike. Around 1&nbsp;ms, however, a doublet
+  separated by approximately 50&nbsp;µs matches the neuron's oscillation period,
+  producing a resonance event and an output spike
+  (<span class="mono">oAct</span>). Near 2&nbsp;ms, a much shorter doublet with
+  an interval below 20&nbsp;µs triggers the coincidence detector, generating a
+  second output spike.
+</p>
+<p>
+  <strong>Figure 29(b) — Excitatory and inhibitory spikes.</strong> The same
+  experiment is repeated while inhibitory inputs are introduced. When
+  excitatory and inhibitory spikes arrive simultaneously before 1&nbsp;ms, they
+  cancel each other, preventing the oscillator from being activated and keeping
+  the neuron in its resting state. After this cancellation period, the neuron
+  responds normally to valid resonance and coincidence events, demonstrating
+  both inhibitory suppression and the post-inhibitory behavior described by the
+  proposed all-digital RAF neuron.
+</p>
+
+        <h3>B. Experimental Measurement</h3>
+        <p>
+          The design was verified on a <strong>DE10-nano</strong> development
+          kit (Cyclone V <span class="mono">5CSEBA6U23I7</span>, Intel 28 nm
+          CMOS, 1.1 V core supply, 3.3 V TTL I/O), captured with a high-speed
+          multi-channel oscilloscope (Figures 30–31 in the source paper). The
+          captured waveforms show the neuron's subthreshold oscillation, the
+          output action potential, the total input spike train, and the
+          sample-and-hold flip-flop's output (Q0 in Fig. 25) — confirming the
+          coincidence detector, the resonance detector, and the damped
+          oscillation at rest. Thanks to the resonance effect, the neuron's
+          response time falls within one eigenperiod.
+        </p>
+
+        <h3>C. Comparison Results</h3>
+        <p>
+          Per Table 4, the proposed all-digital RAF neuron needs the
+          <strong>fewest resources</strong> of the compared designs. The closest
+          related work <abbr title="[99]">[99]</abbr> requires counters,
+          comparators, adders, and subtractors; designs using the Izhikevich
+          model <abbr title="[87], [92]">[87], [92]</abbr> use more than
+          <strong>twenty times</strong> this architecture's flip-flop count and
+          additionally require multipliers and DSP blocks, which raise design
+          cost, chip area, and power. By Table 4's figures, this translates to
+          an estimated <strong>70%–90%</strong> savings in energy and chip area.
+        </p>
+
+        <p>
+          The proposed neuron has just two configurable parameters — eigenperiod
+          and duty cycle — implemented here as two 8-bit buses, so an SNN of
+          <strong>2000 ADRAF cells</strong> needs only about
+          <strong>4 KB</strong> to store all neuron configurations. Because the
+          pulse train slows to a stop at rest, dynamic power drops to zero there
+          — a property ODE-based models can't share, since they continuously
+          recompute neuron state every system clock.
+        </p>
+
+        <p>
+          Per Table 5, compared with the analog RAF neuron of
+          <abbr title="[97]">[97]</abbr> (AMI 0.35 μm CMOS), this all-digital
+          design (Intel 28 nm CMOS) is free from PVT variation and uses
+          transistors about <strong>12 times smaller</strong>
+        </p>
+      </article>
+
+      <!-- ================= CONCLUSION ================= -->
+<article class="section" id="conclusion">
+  <div class="section-num">Section VII</div>
+  <h2>Conclusion</h2>
+
+  <p>
+    The resonate-and-fire model combines the dynamic timing behavior of a
+    biological neuron with the simplicity of an integrate-and-fire model, but
+    it has remained uncommon in hardware. This work proposes digital and
+    all-digital RAF block models, then realizes the all-digital version in
+    Verilog on an Intel Cyclone V FPGA.
+  </p>
+
+  <p>
+    The results confirm that the design reproduces the RAF model's key
+    properties: damped subthreshold oscillation, resonance detection,
+    coincidence detection, and post-inhibitory spikes, while requiring only 23
+    D flip-flops and no multipliers or floating-point arithmetic. :contentReference[oaicite:0]{index=0}
+  </p>
+
+  <p>
+    The implementation uses the fewest hardware resources among the compared
+    designs, showing that RAF-style timing behavior can be realized efficiently
+    in digital hardware.
+  </p>
+</article>
+    <!-- ================= REFERENCES ================= -->
+      <section class="wrap" id="references" style="margin: 3.5rem 0 1.5rem">
+        <div class="refs-dropdown">
+          <button
+            type="button"
+            class="refs-toggle"
+            id="refsToggle"
+            aria-expanded="false"
+            aria-controls="refsPanel"
+          >
+            <span class="dot"></span>
+            References
+            <span class="refs-count" id="refsCount">109</span>
+            <span class="refs-chevron">▾</span>
+          </button>
+
+          <div class="refs-panel" id="refsPanel" role="region" aria-label="References list">
+            <div class="refs-search-row">
+              <input
+                type="text"
+                id="refsSearch"
+                class="refs-search"
+                placeholder="Search author, title, DOI, [number]…"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <span class="refs-matchcount" id="refsMatchCount"></span>
+            </div>
+            <ol class="refs-list" id="refsList"></ol>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- <footer class="wrap">
+      <div class="cite">
+        T.-K. Le, T.-T. Bui, and D.-H. Le, "Modeling and Designing of an
+        All-Digital Resonate-and-Fire Neuron Circuit," <em>IEEE Access</em>.
+        Faculty of Electronics and Telecommunications, University of Science,
+        VNU-HCM. Corresponding author: Duc-Hung Le (ldhung@hcmus.edu.vn).
+        Funding: University of Science, VNU-HCM, Grant ĐTVT 2023-04.
+      </div>
+      Interactive explainer built from the paper's Markdown source and
+      author-provided figures. Not an official publication artifact.
+    </footer> -->
+
+    <footer class="site-footer" id="contact">
+
+  <div class="footer-wrap">
+
+    <p>
+      <strong>Trung-Khanh Le</strong>, <strong>Trong-Tu Bui</strong>, and <strong>Duc-Hung Le</strong> —
+      <em>Modeling and Designing of an All-Digital Resonate-and-Fire Neuron Circuit</em>,
+      <em>IEEE Access</em>, 2023.
+      DOI:
+      <a href="https://doi.org/10.1109/ACCESS.2023.3287994" target="_blank" rel="noopener">
+        10.1109/ACCESS.2023.3287994
+      </a>
+      · CC BY 4.0
+    </p>
+
+    <p>
+      Developed faithfully by <strong>Aditya Bhatnagar</strong>. <strong>MIT License</strong>.
+    </p>
+
+    <div class="footer-links">
+      <a href="https://github.com/adityabhatnagar1/" target="_blank">GitHub</a>
+    </div>
+    <div class="footer-links">
+      <a href="https://www.linkedin.com/in/adityabhatnagar1/" target="_blank">LinkedIn</a>
+    </div>
+
+  </div>
+
+</footer>
+
+    <script>
+      /* ---------- references data ---------- */
+      const REFERENCES = [
+"Y. Kuroe and T. Mori, \"Spiking neural oscillators,\" in Proc. 41st SICE Annu. Conf. (SICE), vol. 2, 2002, pp. 725–729, doi: 10.1109/SICE.2002.1195245.",
+"M. Pankaala, M. Laiho, and P. Hasler, \"Compact floating-gate learning array with STDP,\" in Proc. Int. Joint Conf. Neural Netw., Jun. 2009, pp. 2409–2415, doi: 10.1109/IJCNN.2009.5178879.",
+"G. Sánchez, T. J. Koickal, T. A. A. Sripad, L. C. Gouveia, A. Hamilton, and J. Madrenas, \"Spike-based analog-digital neuromorphic information processing system for sensor applications,\" in Proc. IEEE Int. Symp. Circuits Syst. (ISCAS), May 2013, pp. 1624–1627, doi: 10.1109/ISCAS.2013.6572173.",
+"B. Abinaya and S. S. J. Sophia, \"An event based CMOS quad bilateral combination with asynchronous SRAM architecture based neural network using low power,\" in Proc. 2nd Int. Conf. Electron. Commun. Syst. (ICECS), Feb. 2015, pp. 995–999, doi: 10.1109/ECS.2015.7125064.",
+"C. Luo, Z. Ying, X. Zhu, and L. Chen, \"A mixed-signal spiking neuromorphic architecture for scalable neural network,\" in Proc. 9th Int. Conf. Intell. Hum.-Mach. Syst. Cybern. (IHMSC), Aug. 2017, pp. 179–182, doi: 10.1109/IHMSC.2017.47.",
+"N. Qiao, H. Mostafa, F. Corradi, M. Osswald, F. Stefanini, D. Sumislawska, and G. Indiveri, \"A reconfigurable on-line learning spiking neuromorphic processor comprising 256 neurons and 128K synapses,\" Frontiers Neurosci., vol. 9, p. 141, Apr. 2015, doi: 10.3389/fnins.2015.00141.",
+"J.-J. Lee, J. Park, M.-W. Kwon, S. Hwang, H. Kim, and B.-G. Park, \"Integrated neuron circuit for implementing neuromorphic system with synaptic device,\" Solid-State Electron., vol. 140, pp. 34–40, Feb. 2018, doi: 10.1016/j.sse.2017.10.012.",
+"M. Kim, S. Hwang, S. Bang, T. Kim, D. K. Lee, Md. H. R. Ansari, S. Cho, and B. Park, \"A more hardware-oriented spiking neural network based on leading memory technology and its application with reinforcement learning,\" IEEE Trans. Electron Devices, vol. 68, no. 9, pp. 4411–4417, Sep. 2021, doi: 10.1109/TED.2021.3099769.",
+"S. Song, M. Kim, B. Jeon, D. Ryu, S. Kim, K. Lee, J. Lee, J. Kim, W. Shim, D. Kwon, and B. Park, \"Spiking neural network with weight-sharing synaptic array for multi-input processing,\" IEEE Electron Device Lett., vol. 43, no. 10, pp. 1657–1660, Oct. 2022, doi: 10.1109/LED.2022.3197239.",
+"A. Ghani, T. McGinnity, L. Maguire, and J. Harkin, \"Area efficient architecture for large scale implementation of biologically plausible spiking neural networks on reconfigurable hardware,\" in Proc. Int. Conf. Field Program. Log. Appl., 2006, pp. 1–2, doi: 10.1109/FPL.2006.311352.",
+"J. Seo, B. Brezzo, Y. Liu, B. D. Parker, S. K. Esser, R. K. Montoye, B. Rajendran, J. A. Tierno, L. Chang, D. S. Modha, and D. J. Friedman, \"A 45 nm CMOS neuromorphic chip with a scalable architecture for learning in networks of spiking neurons,\" in Proc. IEEE Custom Integr. Circuits Conf. (CICC), Sep. 2011, pp. 1–4, doi: 10.1109/CICC.2011.6055293.",
+"C. H. Ang, C. Jin, P. H. W. Leong, and A. van Schaik, \"Spiking neural network-based auto-associative memory using FPGA interconnect delays,\" in Proc. Int. Conf. Field-Program. Technol., Dec. 2011, pp. 1–4, doi: 10.1109/FPT.2011.6132701.",
+"J. Cong, H. T. Blair, and D. Wu, \"FPGA simulation engine for customized construction of neural microcircuit,\" in Proc. IEEE 21st Annu. Int. Symp. Field-Program. Custom Comput. Mach., Apr. 2013, p. 229, doi: 10.1109/FCCM.2013.22.",
+"J. R. D. O. Neto, J. P. C. Cajueiro, and J. Ranhel, \"Neural encoding and spike generation for spiking neural networks implemented in FPGA,\" in Proc. Int. Conf. Electron., Commun. Comput. (CONIELECOMP), Feb. 2015, pp. 55–61, doi: 10.1109/CONIELECOMP.2015.7086925.",
+"F. Akopyan, J. Sawada, A. Cassidy, R. Alvarez-Icaza, J. Arthur, P. Merolla, N. Imam, Y. Nakamura, P. Datta, G. Nam, B. Taba, M. Beakes, B. Brezzo, J. B. Kuang, R. Manohar, W. P. Risk, B. Jackson, and D. S. Modha, \"TrueNorth: Design and tool flow of a 65 mW 1 million neuron programmable neurosynaptic chip,\" IEEE Trans. Comput.-Aided Design Integr. Circuits Syst., vol. 34, no. 10, pp. 1537–1557, Oct. 2015, doi: 10.1109/TCAD.2015.2474396.",
+"K. Ahmed, A. Shrestha, Y. Wang, and Q. Qiu, \"System design for in-hardware STDP learning and spiking based probablistic inference,\" in Proc. IEEE Comput. Soc. Annu. Symp. VLSI (ISVLSI), Jul. 2016, pp. 272–277, doi: 10.1109/ISVLSI.2016.91.",
+"K. Matsumoto, H. Torikai, and H. Sekiya, \"XOR learning by spiking neural network with infrared communications,\" in Proc. Asia–Pacific Signal Inf. Process. Assoc. Annu. Summit Conf. (APSIPA ASC), Nov. 2018, pp. 1289–1292, doi: 10.23919/APSIPA.2018.8659484.",
+"G. C. Qiao, S. G. Hu, J. J. Wang, C. M. Zhang, T. P. Chen, N. Ning, Q. Yu, and Y. Liu, \"A neuromorphic-hardware oriented bio-plausible online-learning spiking neural network model,\" IEEE Access, vol. 7, pp. 71730–71740, 2019, doi: 10.1109/ACCESS.2019.2919163.",
+"H. Tang, H. Kim, H. Kim, and J. Park, \"Spike counts based low complexity SNN architecture with binary synapse,\" IEEE Trans. Biomed. Circuits Syst., vol. 13, no. 6, pp. 1664–1677, Dec. 2019, doi: 10.1109/TBCAS.2019.2945406.",
+"C. Sun, H. Sun, J. Xu, J. Han, X. Wang, X. Wang, Q. Chen, Y. Fu, and L. Li, \"An energy efficient STDP-based SNN architecture with on-chip learning,\" IEEE Trans. Circuits Syst. I, Reg. Papers, vol. 69, no. 12, pp. 5147–5158, Dec. 2022, doi: 10.1109/TCSI.2022.3204645.",
+"Q. Chen, C. Gao, and Y. Fu, \"Cerebron: A reconfigurable architecture for spatiotemporal sparse spiking neural networks,\" IEEE Trans. Very Large Scale Integr. (VLSI) Syst., vol. 30, no. 10, pp. 1425–1437, Oct. 2022, doi: 10.1109/TVLSI.2022.3196839.",
+"J. Sommer, M. A. Özkan, O. Keszocze, and J. Teich, \"Efficient hardware acceleration of sparsely active convolutional spiking neural networks,\" IEEE Trans. Comput.-Aided Design Integr. Circuits Syst., vol. 41, no. 11, pp. 3767–3778, Nov. 2022, doi: 10.1109/TCAD.2022.3197512.",
+"W. Guo, M. E. Fouda, A. M. Eltawil, and K. N. Salama, \"Efficient neuromorphic hardware through spiking temporal online local learning,\" IEEE Trans. Very Large Scale Integr. (VLSI) Syst., vol. 30, no. 11, pp. 1642–1653, Nov. 2022, doi: 10.1109/TVLSI.2022.3208191.",
+"S. Lashkare, S. Chouhan, A. Bhat, and U. Ganguly, \"General Izhikevich dynamics in PR0.7 CA0.3 MNO3 RRAM neuron,\" in Proc. Int. Symp. VLSI Technol., Syst. Appl. (VLSI-TSA), Aug. 2020, pp. 48–49, doi: 10.1109/VLSI-TSA48913.2020.9203710.",
+"S. Oh, S. Lee, S. Y. Woo, D. Kwon, J. Im, J. Hwang, J. Bae, B. Park, and J. Lee, \"Spiking neural networks with time-to-first-spike coding using TFT-type synaptic device model,\" IEEE Access, vol. 9, pp. 78098–78107, 2021, doi: 10.1109/ACCESS.2021.3083056.",
+"Y. Chen, K. Xiao, Y. Qin, F. Liu, and J. Wan, \"A compact artificial spiking neuron using a sharp-switching FET with ultra-low energy consumption down to 0.45 fJ/spike,\" IEEE Electron Device Lett., vol. 44, no. 1, pp. 160–163, Jan. 2023, doi: 10.1109/LED.2022.3219465.",
+"A. Dongre and G. Trivedi, \"RRAM-based energy efficient scalable integrate and fire neuron with built-in reset circuit,\" IEEE Trans. Circuits Syst. II, Exp. Briefs, vol. 70, no. 3, pp. 909–913, Mar. 2023, doi: 10.1109/TCSII.2022.3219203.",
+"T. J. Koickal, A. Hamilton, T. C. Pearce, S. L. Tan, J. A. Covington, and J. W. Gardner, \"Analog VLSI design of an adaptive neuromorphic chip for olfactory systems,\" in Proc. IEEE Int. Symp. Circuits Syst., Kos, Greece, May 2006, p. 4550, doi: 10.1109/ISCAS.2006.1693641.",
+"G. Indiveri, E. Chicca, and R. Douglas, \"A VLSI array of low-power spiking neurons and bistable synapses with spike-timing dependent plasticity,\" IEEE Trans. Neural Netw., vol. 17, no. 1, pp. 211–221, Jan. 2006, doi: 10.1109/TNN.2005.860850.",
+"T. Dowrick, S. Hall, L. McDaid, O. Buiu, and P. Kelly, \"A biologically plausible neuron circuit,\" in Proc. Int. Joint Conf. Neural Netw., Orlando, FL, USA, Aug. 2007, pp. 715–719, doi: 10.1109/IJCNN.2007.4371045.",
+"A. Joubert, B. Belhadj, O. Temam, and R. Héliot, \"Hardware spiking neurons design: Analog or digital?\" in Proc. Int. Joint Conf. Neural Netw. (IJCNN), Jun. 2012, pp. 1–5, doi: 10.1109/IJCNN.2012.6252600.",
+"Y. Nishitani, Y. Kaneko, and M. Ueda, \"Supervised learning using spike timing-dependent plasticity of memristive synapses,\" IEEE Trans. Neural Netw. Learn. Syst., vol. 26, no. 12, pp. 2999–3008, Dec. 2015, doi: 10.1109/TNNLS.2015.2399491.",
+"V. Kornijcuk, H. Lim, J. Y. Seok, G. Kim, S. K. Kim, I. Kim, B. J. Choi, and D. S. Jeong, \"Leaky integrate-and-fire neuron circuit based on floating-gate integrator,\" Frontiers Neurosci., vol. 10, p. 212, May 2016, doi: 10.3389/fnins.2016.00212.",
+"Z. Ying, C. Luo, and X. Zhu, \"A scalable hardware architecture for multi-layer spiking neural networks,\" in Proc. IEEE 12th Int. Conf. ASIC (ASICON), Guiyang, China, Oct. 2017, pp. 839–842, doi: 10.1109/ASICON.2017.8252607.",
+"G. K. Chen, R. Kumar, H. E. Sumbul, P. C. Knag, and R. K. Krishnamurthy, \"A 4096-neuron 1M-synapse 3.8-pJ/SOP spiking neural network with on-chip STDP learning and sparse weights in 10-nm FinFET CMOS,\" IEEE J. Solid-State Circuits, vol. 54, no. 4, pp. 992–1002, Apr. 2019, doi: 10.1109/JSSC.2018.2884901.",
+"A. Shukla and U. Ganguly, \"An on-chip trainable and the clock-less spiking neural network with 1R memristive synapses,\" IEEE Trans. Biomed. Circuits Syst., vol. 12, no. 4, pp. 884–893, Aug. 2018, doi: 10.1109/TBCAS.2018.2831618.",
+"V. Cincon, E. I. Vatajelu, L. Anghel, and P. Galy, \"From 1.8 V to 0.19 V voltage bias on analog spiking neuron in 28 nm UTBB FD-SOI technology,\" in Proc. Joint Int. EUROSOI Workshop Int. Conf. Ultimate Integr. Silicon (EUROSOI-ULIS), Sep. 2020, pp. 1–4, doi: 10.1109/EUROSOIULIS49407.2020.9365302.",
+"V. Rajakumari and K. P. Pradhan, \"Demonstration of an ultralow energy PD-SOI FinFET based LIF neuron for SNN,\" IEEE Trans. Nanotechnol., vol. 21, pp. 434–441, 2022, doi: 10.1109/TNANO.2022.3195698.",
+"Y. Deng, B. Liu, Z. Huang, X. Liu, S. He, Q. Li, and D. Guo, \"Fractional spiking neuron: Fractional leaky integrate-and-fire circuit described with dendritic fractal model,\" IEEE Trans. Biomed. Circuits Syst., vol. 16, no. 6, pp. 1375–1386, Dec. 2022, doi: 10.1109/TBCAS.2022.3218294.",
+"A. K. Singh, V. Saraswat, M. S. Baghini, and U. Ganguly, \"Quantum tunneling based ultra-compact and energy efficient spiking neuron enables hardware SNN,\" IEEE Trans. Circuits Syst. I, Reg. Papers, vol. 69, no. 8, pp. 3212–3224, Aug. 2022, doi: 10.1109/TCSI.2022.3172176.",
+"Y.-W. Chung, J.-K. Han, J.-W. Jung, S.-Y. Yun, J.-M. Yu, M.-W. Lee, and Y.-K. Choi, \"Thermally stable single-transistor neuron for reliable neuromorphic system,\" IEEE Electron Device Lett., vol. 43, no. 11, pp. 1806–1809, Nov. 2022, doi: 10.1109/LED.2022.3207187.",
+"T. Schoenauer, S. Atasoy, N. Mehrtash, and H. Klar, \"Simulation of a digital neuro-chip for spiking neural networks,\" in Proc. IEEE-INNS-ENNS Int. Joint Conf. Neural Netw. (IJCNN), Neural Comput., New Challenges Perspect. New Millennium, Jul. 2000, pp. 490–495, doi: 10.1109/IJCNN.2000.860819.",
+"J. N. Allen, H. S. Abdel-Aty-Zohdy, and R. L. Ewing, \"Plasticity recurrent spiking neural networks for olfactory pattern recognition,\" in Proc. 48th Midwest Symp. Circuits Syst., vol. 2, 2005, pp. 1741–1744, doi: 10.1109/MWSCAS.2005.1594457.",
+"J. Harkin, F. Morgan, S. Hall, P. Dudek, T. Dowrick, and L. McDaid, \"Reconfigurable platforms and the challenges for large-scale implementations of spiking neural networks,\" in Proc. Int. Conf. Field Program. Log. Appl., 2008, pp. 483–486, doi: 10.1109/FPL.2008.4629989.",
+"B. Glackin, J. Harkin, T. M. McGinnity, L. P. Maguire, and Q. Wu, \"Emulating spiking neural networks for edge detection on FPGA hardware,\" in Proc. Int. Conf. Field Program. Log. Appl., Aug. 2009, pp. 670–673, doi: 10.1109/FPL.2009.5272339.",
+"P. Merolla, J. Arthur, F. Akopyan, N. Imam, R. Manohar, and D. S. Modha, \"A digital neurosynaptic core using embedded crossbar memory with 45 pJ per spike in 45 nm,\" in Proc. IEEE Custom Integr. Circuits Conf. (CICC), Sep. 2011, pp. 1–4, doi: 10.1109/CICC.2011.6055294.",
+"J. Luo, G. Coapes, T. Mak, T. Yamazaki, C. Tin, and P. Degenaar, \"Real-time simulation of passage-of-time encoding in cerebellum using a scalable FPGA-based system,\" IEEE Trans. Biomed. Circuits Syst., vol. 10, no. 3, pp. 742–753, Jun. 2016, doi: 10.1109/TBCAS.2015.2460232.",
+"J. Liu, J. Harkin, L. P. Maguire, L. J. McDaid, and J. J. Wade, \"SPANNER: A self-repairing spiking neural network hardware architecture,\" IEEE Trans. Neural Netw. Learn. Syst., vol. 29, no. 4, pp. 1287–1300, Apr. 2018, doi: 10.1109/TNNLS.2017.2673021.",
+"C. Frenkel, M. Lefebvre, J.-D. Legat, and D. Bol, \"A 0.086-mm2 12.7-pJ/SOP 64k-synapse 256-neuron online-learning digital spiking neuromorphic processor in 28-nm CMOS,\" IEEE Trans. Biomed. Circuits Syst., vol. 13, no. 1, pp. 145–158, Feb. 2019, doi: 10.1109/TBCAS.2018.2880425.",
+"E. Z. Farsa, A. Ahmadi, M. A. Maleki, M. Gholami, and H. N. Rad, \"A low-cost high-speed neuromorphic hardware based on spiking neural network,\" IEEE Trans. Circuits Syst. II, Exp. Briefs, vol. 66, no. 9, pp. 1582–1586, Sep. 2019, doi: 10.1109/TCSII.2019.2890846.",
+"H. Asgari, B. M. Maybodi, R. Kreiser, and Y. Sandamirskaya, \"Digital multiplier-less spiking neural network architecture of reinforcement learning in a context-dependent task,\" IEEE J. Emerg. Sel. Topics Circuits Syst., vol. 10, no. 4, pp. 498–511, Dec. 2020, doi: 10.1109/JETCAS.2020.3031040.",
+"S. Gupta, A. Vyas, and G. Trivedi, \"FPGA implementation of simplified spiking neural network,\" in Proc. 27th IEEE Int. Conf. Electron., Circuits Syst. (ICECS), Nov. 2020, pp. 1–4, doi: 10.1109/ICECS49266.2020.9294790.",
+"J. Han, Z. Li, W. Zheng, and Y. Zhang, \"Hardware implementation of spiking neural networks on FPGA,\" Tsinghua Sci. Technol., vol. 25, no. 4, pp. 479–486, Aug. 2020, doi: 10.26599/TST.2019.9010019.",
+"H. Zheng, Y. Guo, X. Yang, S. Xiao, and Z. Yu, \"Balancing the cost and performance trade-offs in SNN processors,\" IEEE Trans. Circuits Syst. II, Exp. Briefs, vol. 68, no. 9, pp. 3172–3176, Sep. 2021, doi: 10.1109/TCSII.2021.3090422.",
+"J. Wu, Y. Zhan, Z. Peng, X. Ji, G. Yu, R. Zhao, and C. Wang, \"Efficient design of spiking neural network with STDP learning based on fast CORDIC,\" IEEE Trans. Circuits Syst. I, Reg. Papers, vol. 68, no. 6, pp. 2522–2534, Jun. 2021, doi: 10.1109/TCSI.2021.3061766.",
+"B. Deng, Y. Fan, J. Wang, and S. Yang, \"Reconstruction of a fully paralleled auditory spiking neural network and FPGA implementation,\" IEEE Trans. Biomed. Circuits Syst., vol. 15, no. 6, pp. 1320–1331, Dec. 2021, doi: 10.1109/TBCAS.2021.3122549.",
+"S. G. Hu, G. C. Qiao, X. K. Liu, Y. H. Liu, C. M. Zhang, Y. Zuo, P. Zhou, Y. A. Liu, N. Ning, Q. Yu, and Y. Liu, \"A co-designed neuromorphic chip with compact (17.9K F2) and weak neuron number-dependent neuron/synapse modules,\" IEEE Trans. Biomed. Circuits Syst., vol. 16, no. 6, pp. 1250–1260, Dec. 2022, doi: 10.1109/TBCAS.2022.3209073.",
+"J. Zhang, R. Wang, T. Wang, J. Liu, S. Dang, and G. Zhang, \"A configurable spiking convolution architecture supporting multiple coding schemes on FPGA,\" IEEE Trans. Circuits Syst. II, Exp. Briefs, vol. 69, no. 12, pp. 5089–5093, Dec. 2022, doi: 10.1109/TCSII.2022.3199033.",
+"A. Carpegna, A. Savino, and S. Di Carlo, \"Spiker: An FPGA-optimized hardware accelerator for spiking neural networks,\" in Proc. IEEE Comput. Soc. Annu. Symp. VLSI (ISVLSI), Jul. 2022, pp. 14–19, doi: 10.1109/ISVLSI54635.2022.00016.",
+"W. Guo, H. E. Yantir, M. E. Fouda, A. M. Eltawil, and K. N. Salama, \"Toward the optimal design and FPGA implementation of spiking neural networks,\" IEEE Trans. Neural Netw. Learn. Syst., vol. 33, no. 8, pp. 3988–4002, Aug. 2022, doi: 10.1109/TNNLS.2021.3055421.",
+"J.-W. Han and M. Meyyappan, \"Leaky integrate-and-fire biristor neuron,\" IEEE Electron Device Lett., vol. 39, no. 9, pp. 1457–1460, Sep. 2018, doi: 10.1109/LED.2018.2856092.",
+"J.-Q. Yang, R. Wang, Z.-P. Wang, Q.-Y. Ma, J.-Y. Mao, Y. Ren, X. Yang, Y. Zhou, and S.-T. Han, \"Leaky integrate-and-fire neurons based on perovskite memristor for spiking neural networks,\" Nano Energy, vol. 74, Aug. 2020, Art. no. 104828, doi: 10.1016/j.nanoen.2020.104828.",
+"N. Kamal and J. Singh, \"A highly scalable junctionless FET leaky integrate-and-fire neuron for spiking neural networks,\" IEEE Trans. Electron Devices, vol. 68, no. 4, pp. 1633–1638, Apr. 2021, doi: 10.1109/TED.2021.3061036.",
+"J. Han, M. Kim, S. Kim, M. Lee, S. Lee, J. Yu, and Y. Choi, \"Investigation of leaky characteristic in a single-transistor-based leaky integrate-and-fire neuron,\" IEEE Trans. Electron Devices, vol. 68, no. 11, pp. 5912–5915, Nov. 2021, doi: 10.1109/TED.2021.3110830.",
+"J. Zhao and Y.-B. Kim, \"Circuit implementation of FitzHugh–Nagumo neuron model using field programmable analog arrays,\" in Proc. 50th Midwest Symp. Circuits Syst., Aug. 2007, pp. 772–775, doi: 10.1109/MWSCAS.2007.4488691.",
+"J. Cosp, S. Binczak, J. Madrenas, and D. Fernandez, \"Implementation of compact VLSI FitzHugh–Nagumo neurons,\" in Proc. IEEE Int. Symp. Circuits Syst., May 2008, pp. 2370–2373, doi: 10.1109/ISCAS.2008.4541931.",
+"R. Borwankar, A. Desai, M. R. Haider, R. Ludwig, and Y. Massoud, \"An analog implementation of FitzHugh–Nagumo neuron model for spiking neural networks,\" in Proc. 16th IEEE Int. New Circuits Syst. Conf. (NEWCAS), Jun. 2018, pp. 134–138, doi: 10.1109/NEWCAS.2018.8585554.",
+"F. A. Khanday, N. A. Kant, M. R. Dar, T. Z. A. Zulkifli, and C. Psychalinos, \"Low-voltage low-power integrable CMOS circuit implementation of integer- and fractional–order FitzHugh–Nagumo neuron model,\" IEEE Trans. Neural Netw. Learn. Syst., vol. 30, no. 7, pp. 2108–2122, Jul. 2019, doi: 10.1109/TNNLS.2018.2877454.",
+"D. Rajasekharan, A. Gaidhane, A. R. Trivedi, and Y. S. Chauhan, \"Ferroelectric FET-based implementation of FitzHugh–Nagumo neuron model,\" IEEE Trans. Comput.-Aided Design Integr. Circuits Syst., vol. 41, no. 7, pp. 2107–2114, Jul. 2022, doi: 10.1109/TCAD.2021.3101407.",
+"M. Nouri, G. R. Karimi, A. Ahmadi, and D. Abbott, \"Digital multiplierless implementation of the biological FitzHugh–Nagumo model,\" Neurocomputing, vol. 165, pp. 468–476, Oct. 2015, doi: 10.1016/j.neucom.2015.03.084.",
+"A. Zahedi, S. Haghiri, and M. Hayati, \"Multiplierless digital implementation of time-varying FitzHugh–Nagumo model,\" IEEE Trans. Circuits Syst. I, Reg. Papers, vol. 66, no. 7, pp. 2662–2670, Jul. 2019, doi: 10.1109/TCSI.2019.2899361.",
+"P. Arena, L. Fortuna, and M. Frasca, \"Extended SC-CNN implementation of the Hindmarsh–Rose neuron,\" in Proc. 6th IEEE Int. Workshop Cellular Neural Netw. Appl. (CNNA), May 2000, pp. 339–344, doi: 10.1109/CNNA.2000.877352.",
+"Y. J. Lee, J. Lee, Y.-B. Kim, and J. Ayers, \"Low power CMOS adaptive electronic central pattern generator design,\" in Proc. 48th Midwest Symp. Circuits Syst., vol. 2, 2005, pp. 1350–1353, doi: 10.1109/MWSCAS.2005.1594360.",
+"Y. He, K. K. Kim, and Y. Kim, \"Evaluations of electronic neuron model for low power VLSI implementation,\" in Proc. Int. SoC Design Conf. (ISOCC), Jeju, South Korea, Oct. 2019, pp. 206–207, doi: 10.1109/ISOCC47750.2019.9027702.",
+"J. Lu, Y. Kim, and J. Ayers, \"A low power 65 nm CMOS electronic neuron and synapse design for a biomimetic micro-robot,\" in Proc. IEEE 54th Int. Midwest Symp. Circuits Syst. (MWSCAS), Aug. 2011, pp. 1–4, doi: 10.1109/MWSCAS.2011.6026468.",
+"J. Cai, H. Bao, M. Chen, Q. Xu, and B. Bao, \"Analog/digital multiplierless implementations for nullcline-characteristics-based piecewise linear Hindmarsh–Rose neuron model,\" IEEE Trans. Circuits Syst. I, Reg. Papers, vol. 69, no. 7, pp. 2916–2927, Jul. 2022, doi: 10.1109/TCSI.2022.3164068.",
+"A. Kazemi, A. Ahmadi, and S. Gomar, \"A digital synthesis of Hindmarsh–Rose neuron: A thalamic neuron model of the brain,\" in Proc. 22nd Iranian Conf. Electr. Eng. (ICEE), May 2014, pp. 238–241, doi: 10.1109/IranianCEE.2014.6999539.",
+"N. Gomar, B. Moradi, and M. Ahmadi, \"Digital hardware implementation of a biological central pattern generator,\" in Proc. IEEE 61st Int. Midwest Symp. Circuits Syst. (MWSCAS), Aug. 2018, pp. 69–72, doi: 10.1109/MWSCAS.2018.8624033.",
+"M. Hayati, M. Nouri, D. Abbott, and S. Haghiri, \"Digital multiplierless realization of two-coupled biological Hindmarsh–Rose neuron model,\" IEEE Trans. Circuits Syst. II, Exp. Briefs, vol. 63, no. 5, pp. 463–467, May 2016, doi: 10.1109/TCSII.2015.2505258.",
+"H. Takaloo, A. Ahmadi, and M. Ahmadi, \"Design and analysis of the Morris–Lecar spiking neuron in efficient analog implementation,\" IEEE Trans. Circuits Syst. II, Exp. Briefs, vol. 70, no. 1, pp. 6–10, Jan. 2023, doi: 10.1109/TCSII.2022.3203929.",
+"A. Amirsoleimani, M. Ahmadi, and A. Ahmadi, \"STDP-based unsupervised learning of memristive spiking neural network by Morris–Lecar model,\" in Proc. Int. Joint Conf. Neural Netw. (IJCNN), May 2017, pp. 3409–3414, doi: 10.1109/IJCNN.2017.7966284.",
+"M. A. Nuño-Maganda, M. Arias-Estrada, C. Torres-Huitzil, H. H. Aviles-Arriaga, Y. Hernández-Mier, and M. Morales-Sandoval, \"A hardware architecture for image clustering using spiking neural networks,\" in Proc. IEEE Comput. Soc. Annu. Symp. VLSI, Aug. 2012, pp. 261–266, doi: 10.1109/ISVLSI.2012.46.",
+"T. Iakymchuk, A. Rosado, J. V. Frances, and M. Batallre, \"Fast spiking neural network architecture for low-cost FPGA devices,\" in Proc. 7th Int. Workshop Reconfigurable Commun.-Centric Syst.-on-Chip (ReCoSoC), Jul. 2012, pp. 1–6, doi: 10.1109/ReCoSoC.2012.6322906.",
+"J. H. B. Wijekoon and P. Dudek, \"A CMOS circuit implementation of a spiking neuron with bursting and adaptation on a biological timescale,\" in Proc. IEEE Biomed. Circuits Syst. Conf., Nov. 2009, pp. 193–196, doi: 10.1109/BIOCAS.2009.5372050.",
+"L. E. Srouji, Y. Lee, M. B. On, L. Zhang, and S. J. B. Yoo, \"Scalable nanophotonic-electronic spiking neural networks,\" IEEE J. Sel. Topics Quantum Electron., vol. 29, no. 2, pp. 1–13, Mar. 2023, doi: 10.1109/JSTQE.2022.3217011.",
+"K. L. Rice, M. A. Bhuiyan, T. M. Taha, C. N. Vutsinas, and M. C. Smith, \"FPGA implementation of Izhikevich spiking neural networks for character recognition,\" in Proc. Int. Conf. Reconfigurable Comput. FPGAs, Dec. 2009, pp. 451–456, doi: 10.1109/ReConFig.2009.77.",
+"M. Ambroise, T. Levi, Y. Bornat, and S. Saighi, \"Biorealistic spiking neural network on FPGA,\" in Proc. 47th Annu. Conf. Inf. Sci. Syst. (CISS), Baltimore, MD, USA, Mar. 2013, pp. 1–6, doi: 10.1109/CISS.2013.6616689.",
+"D. Pani, P. Meloni, G. Tuveri, F. Palumbo, P. Massobrio, and L. Raffo, \"An FPGA platform for real-time simulation of spiking neuronal networks,\" Frontiers Neurosci., vol. 11, p. 90, Feb. 2017, doi: 10.3389/fnins.2017.00090.",
+"A. Podobas and S. Matsuoka, \"Designing and accelerating spiking neural networks using OpenCL for FPGAs,\" in Proc. Int. Conf. Field Program. Technol. (ICFPT), Dec. 2017, pp. 255–258, doi: 10.1109/FPT.2017.8280154.",
+"C. Lammie, T. Hamilton, and M. R. Azghadi, \"Unsupervised character recognition with a simplified FPGA neuromorphic system,\" in Proc. IEEE Int. Symp. Circuits Syst. (ISCAS), May 2018, pp. 1–5, doi: 10.1109/ISCAS.2018.8351532.",
+"M. Heidarpur, A. Ahmadi, M. Ahmadi, and M. R. Azghadi, \"CORDIC-SNN: On-FPGA STDP learning with Izhikevich neurons,\" IEEE Trans. Circuits Syst. I, Reg. Papers, vol. 66, no. 7, pp. 2651–2661, Jul. 2019, doi: 10.1109/TCSI.2019.2899356.",
+"G. Leone, L. Raffo, and P. Meloni, \"A bandwidth-efficient emulator of biologically-relevant spiking neural networks on FPGA,\" IEEE Access, vol. 10, pp. 76780–76793, 2022, doi: 10.1109/ACCESS.2022.3192826.",
+"J. Wang, Z. Peng, Y. Zhan, Y. Li, G. Yu, K. Chong, and C. Wang, \"A high-accuracy and energy-efficient CORDIC based Izhikevich neuron with error suppression and compensation,\" IEEE Trans. Biomed. Circuits Syst., vol. 16, no. 5, pp. 807–821, Oct. 2022, doi: 10.1109/TBCAS.2022.3191004.",
+"F. Shama, S. Haghiri, and M. A. Imani, \"FPGA realization of Hodgkin–Huxley neuronal model,\" IEEE Trans. Neural Syst. Rehabil. Eng., vol. 28, no. 5, pp. 1059–1068, May 2020, doi: 10.1109/TNSRE.2020.2980475.",
+"F. Grassia, T. Levi, T. Kohno, and S. Saïghi, \"Silicon neuron: Digital hardware implementation of the quartic model,\" Artif. Life Robot., vol. 19, no. 3, pp. 215–219, Nov. 2014, doi: 10.1007/s10015-014-0160-2.",
+"D. Owen-Newns, J. Robertson, M. Hejda, and A. Hurtado, \"GHz rate neuromorphic photonic spiking neural network with a single vertical-cavity surface-emitting laser (VCSEL),\" IEEE J. Sel. Topics Quantum Electron., vol. 29, no. 2, pp. 1–10, Mar./Apr. 2023, doi: 10.1109/JSTQE.2022.3205716.",
+"K. Nakada, T. Asai, and H. Hayashi, \"Analog VLSI implementation of resonate-and-fire neuron,\" Int. J. Neural Syst., vol. 16, no. 6, pp. 445–456, Dec. 2006, doi: 10.1142/S0129065706000846.",
+"H.-Y. Hsieh and K.-T. Tang, \"VLSI implementation of a bio-inspired olfactory spiking neural network,\" IEEE Trans. Neural Netw. Learn. Syst., vol. 23, no. 7, pp. 1065–1073, Jul. 2012, doi: 10.1109/TNNLS.2012.2195329.",
+"T. Hishiki and H. Torikai, \"A novel rotate-and-fire digital spiking neuron and its neuron-like bifurcations and responses,\" IEEE Trans. Neural Netw., vol. 22, no. 5, pp. 752–767, May 2011, doi: 10.1109/TNN.2011.2116802.",
+"E. M. Izhikevich, \"Resonate-and-fire neurons,\" Neural Netw., vol. 14, nos. 6–7, pp. 883–894, 2001, doi: 10.1016/S0893-6080(01)00078-8.",
+"J. P. Roach, A. Pidde, E. Katz, J. Wu, N. Ognjanovski, S. J. Aton, and M. R. Zochowski, \"Resonance with subthreshold oscillatory drive organizes activity and optimizes learning in neural networks,\" Proc. Nat. Acad. Sci. USA, vol. 115, no. 13, pp. E3017–E3025, Mar. 2018, doi: 10.1073/pnas.1716933115.",
+"T. Chartrand, M. S. Goldman, and T. J. Lewis, \"Synchronization of electrically coupled resonate-and-fire neurons,\" SIAM J. Appl. Dyn. Syst., vol. 18, no. 3, pp. 1643–1693, Jan. 2019, doi: 10.1137/18m1197412.",
+"M. A. Aoun, \"Resonant neuronal groups,\" Phys. Open, vol. 13, Dec. 2022, Art. no. 100104, doi: 10.1016/j.physo.2022.100104.",
+"E. M. Izhikevich, \"Simple model of spiking neurons,\" IEEE Trans. Neural Netw., vol. 14, no. 6, pp. 1569–1572, Nov. 2003, doi: 10.1109/TNN.2003.820440.",
+"E. R. Kandel, J. H. Schwartz, T. M. Jessell, S. A. Siegelbaum, and A. J. Hudspeth, \"Membrane potential and the passive electrical properties of the neuron,\" in Principles of Neural Science, 5th ed. New York, NY, USA: McGraw-Hill, 2013, ch. 6, pp. 128–130.",
+"E. R. Kandel, J. H. Schwartz, T. M. Jessell, S. A. Siegelbaum, and A. J. Hudspeth, \"Nerve cells, neural circuitry, and behavior,\" in Principles of Neural Science, 5th ed. New York, NY, USA: McGraw-Hill, 2013, ch. 2, pp. 24–32.",
+"E. R. Kandel, J. H. Schwartz, T. M. Jessell, S. A. Siegelbaum, and A. J. Hudspeth, \"Propagated signaling: The action potential,\" in Principles of Neural Science, 5th ed. New York, NY, USA: McGraw-Hill, 2013, ch. 7, pp. 148–149.",
+"E. M. Izhikevich, \"Simple models,\" in Dynamical Systems in Neuroscience: The Geometry of Excitability and Bursting. Cambridge, MA, USA: MIT Press, Jul. 2006, ch. 8, sec. 8.1, pp. 269–270, doi: 10.7551/mitpress/2526.003.0009.",
+"E. M. Izhikevich, \"Neuronal excitability,\" in Dynamical Systems in Neuroscience: The Geometry of Excitability and Bursting. Cambridge, MA, USA: MIT Press, Jul. 2006, ch. 7, sec. 7.2, pp. 229–230, doi: 10.7551/mitpress/2526.003.0008."
+      ];
+
+      function linkifyDoi(text) {
+        function escapeHtml(s) {
+          return s
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+        }
+        const escaped = escapeHtml(text);
+        return escaped.replace(
+          /doi:\s*([^\s,]+)\.?$/,
+          (m, doi) =>
+            `doi: <a href="https://doi.org/${doi.replace(/\.$/, "")}" target="_blank" rel="noopener">${doi}</a>`,
+        );
+      }
+
+      function renderRefs(filter) {
+        const list = document.getElementById("refsList");
+        const q = (filter || "").trim().toLowerCase();
+        list.innerHTML = "";
+        let shown = 0;
+        REFERENCES.forEach((text, i) => {
+          const num = i + 1;
+          const haystack = (num + " " + text).toLowerCase();
+          const matches = !q || haystack.includes(q);
+          if (!matches) return;
+          shown++;
+          const li = document.createElement("li");
+          const numSpan = document.createElement("span");
+          numSpan.className = "refs-num";
+          numSpan.textContent = "[" + num + "]";
+          const textSpan = document.createElement("span");
+          textSpan.className = "refs-text";
+          let html = linkifyDoi(text);
+          if (q && q.length > 1 && !/^\d+$/.test(q)) {
+            const escQ = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            html = html.replace(new RegExp("(" + escQ + ")", "ig"), "<mark>$1</mark>");
+          }
+          textSpan.innerHTML = html;
+          li.appendChild(numSpan);
+          li.appendChild(textSpan);
+          list.appendChild(li);
+        });
+        const matchEl = document.getElementById("refsMatchCount");
+        if (q) {
+          matchEl.textContent = shown + " / " + REFERENCES.length;
+        } else {
+          matchEl.textContent = "";
+        }
+        if (shown === 0) {
+          const empty = document.createElement("div");
+          empty.className = "refs-empty";
+          empty.textContent = "No references match “" + filter + "”.";
+          list.appendChild(empty);
+        }
+      }
+
+      document.getElementById("refsCount").textContent = REFERENCES.length;
+      renderRefs("");
+
+      const refsToggle = document.getElementById("refsToggle");
+      const refsPanel = document.getElementById("refsPanel");
+      const refsSearch = document.getElementById("refsSearch");
+      refsToggle.addEventListener("click", () => {
+        const open = refsPanel.classList.toggle("open");
+        refsToggle.setAttribute("aria-expanded", open);
+        if (open) setTimeout(() => refsSearch.focus(), 50);
+      });
+      refsSearch.addEventListener("input", (e) => renderRefs(e.target.value));
+
+      /* jump to a reference via abbr[title="[N]"] click, e.g. [99] citations in body */
+      document.querySelectorAll("abbr[title]").forEach((abbr) => {
+        const m = abbr.title.match(/^\[(\d+)\]/);
+        if (!m) return;
+        abbr.style.cursor = "pointer";
+        abbr.addEventListener("click", () => {
+          refsPanel.classList.add("open");
+          refsToggle.setAttribute("aria-expanded", "true");
+          document.getElementById("references").scrollIntoView({ behavior: "smooth", block: "start" });
+          refsSearch.value = m[1];
+          renderRefs(m[1]);
+        });
+      });
+
+      /* ---------- progress bar ---------- */
+      const bar = document.getElementById("progressbar");
+      function updateProgress() {
+        const h = document.documentElement;
+        const scrolled = h.scrollTop;
+        const max = h.scrollHeight - h.clientHeight;
+        bar.style.width = (max > 0 ? (scrolled / max) * 100 : 0) + "%";
+      }
+      document.addEventListener("scroll", updateProgress, { passive: true });
+      updateProgress();
+
+      /* ---------- toc toggle ---------- */
+      const tocBtn = document.getElementById("tocBtn");
+      const tocPanel = document.getElementById("tocPanel");
+      tocBtn.addEventListener("click", () => {
+        const open = tocPanel.classList.toggle("open");
+        tocBtn.setAttribute("aria-expanded", open);
+      });
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest("nav.toc")) tocPanel.classList.remove("open");
+      });
+      tocPanel.querySelectorAll("a").forEach((a) => {
+        a.addEventListener("click", () => tocPanel.classList.remove("open"));
+      });
+
+      /* active section highlight */
+      const sections = document.querySelectorAll(
+        "main .section, header .abstract",
+      );
+      const tocLinks = document.querySelectorAll(".toc-panel a");
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const id = entry.target.id;
+              tocLinks.forEach((l) =>
+                l.classList.toggle(
+                  "active",
+                  l.getAttribute("href") === "#" + id,
+                ),
+              );
+            }
+          });
+        },
+        { rootMargin: "-40% 0px -55% 0px" },
+      );
+      sections.forEach((s) => io.observe(s));
+
+      /* ---------- scroll reveal for figures/equations ---------- */
+      const revealTargets = document.querySelectorAll(
+        "figure.fig, .eq, .plain, details.deeper",
+      );
+      revealTargets.forEach((el) => {
+        el.style.opacity = 0;
+        el.style.transform = "translateY(14px)";
+        el.style.transition = "opacity .6s ease, transform .6s ease";
+      });
+      const revealIO = new IntersectionObserver(
+        (entries, obs) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.style.opacity = 1;
+              entry.target.style.transform = "translateY(0)";
+              obs.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.1 },
+      );
+      revealTargets.forEach((el) => revealIO.observe(el));
+
+      /* ---------- lightbox ---------- */
+      const lightbox = document.getElementById("lightbox");
+      const lbImg = document.getElementById("lbImg");
+      const lbCap = document.getElementById("lbCap");
+      document.querySelectorAll("figure.fig[data-full]").forEach((fig) => {
+        fig.addEventListener("click", () => openLB(fig));
+        fig.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openLB(fig);
+          }
+        });
+      });
+      function openLB(fig) {
+        lbImg.src = fig.dataset.full;
+        lbImg.alt = fig.querySelector("img").alt;
+        lbCap.textContent = fig.dataset.cap || "";
+        lightbox.classList.add("open");
+        document.getElementById("lbClose").focus();
+      }
+      function closeLB() {
+        lightbox.classList.remove("open");
+      }
+      document.getElementById("lbClose").addEventListener("click", closeLB);
+      lightbox.addEventListener("click", (e) => {
+        if (e.target === lightbox) closeLB();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeLB();
+      });
+
+      /* ---------- sortable tables ---------- */
+      document.querySelectorAll("table").forEach((table) => {
+        const ths = table.querySelectorAll("th");
+        ths.forEach((th, idx) => {
+          th.addEventListener("click", () => {
+            const tbody = table.querySelector("tbody");
+            const rows = Array.from(tbody.querySelectorAll("tr"));
+            const asc = th.dataset.asc !== "true";
+            ths.forEach((h) => (h.dataset.asc = ""));
+            th.dataset.asc = asc;
+            rows.sort((a, b) => {
+              const av = a.children[idx].textContent.trim();
+              const bv = b.children[idx].textContent.trim();
+              const an = parseFloat(av),
+                bn = parseFloat(bv);
+              if (!isNaN(an) && !isNaN(bn)) return asc ? an - bn : bn - an;
+              return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+            });
+            rows.forEach((r) => tbody.appendChild(r));
+          });
+        });
+      });
+
+      /* ---------- KaTeX render ---------- */
+      window.addEventListener("load", () => {
+        if (typeof renderMathInElement !== "function") {
+          console.error("KaTeX auto-render failed to load.");
+          return;
+        }
+
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "$", right: "$", display: false },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true },
+          ],
+          throwOnError: false,
+          strict: false,
+        });
+      });
+    </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "$", right: "$", display: false },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true },
+          ],
+
+          throwOnError: false,
+
+          strict: false,
+        });
+      });
+    </script>
+  </body>
+</html>
